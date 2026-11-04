@@ -117,8 +117,8 @@
 | API-02-T07 | image 필드 누락 | 422 | `evidence/err_422.png` |
 | API-02-T08 | Redis 정지 중 동기 요청 | 200 · cache_hit false (폴백) | `evidence/redis_down_sync.png` |
 | API-03-T02 | Redis 정지 중 비동기 접수 | 503 | `evidence/redis_down_503.png` |
-| API-05-T01 | 밭 사진 `00_original.jpg` | 200 · far · CHECK | `evidence/v2_far_original.png` · `data/v2_far_original.json` |
-| API-05-T02 | `healthy_test.0.jpg` | 200 · close · HEALTHY | `data/v2_close_test.json` |
+| API-05-T01 | 밭 사진 `00_original.jpg` | 200 · far · 잎 7장 · DISEASE (최종 모델 · 1장 bean_rust 0.66) | `evidence/v2_far_original.png` · `data/v2_far_original.json` |
+| API-05-T02 | `healthy_test.0.jpg` | 200 · close · HEALTHY 0.99 | `data/v2_close_test.json` |
 | API-05-T03 | `05_blur_gaussian.jpg` | 200 · RETAKE | `data/v2_retake_blur.json` |
 
 ![Swagger](evidence/swagger.png)
@@ -134,7 +134,7 @@
 | `leaves[]` | `no` · `box` (원본 좌표) · `label` · `score` · `check` · `all` |
 | 캐시 · DB | 사용하지 않음 (v1 경로 그대로) |
 
-**응답 예 (실제 · 밭 사진 · 일부)**
+**응답 예 (Head-only 시점 실제 응답 · 밭 사진 · 일부)** · 최종 모델 응답 전체 → `data/v2_far_original.json`
 ```json
 {
   "decision": "CHECK",

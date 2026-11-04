@@ -1,5 +1,5 @@
 {
-  "model_id": "artifacts/beans_resnet18",
+  "model_id": "artifacts/beans_resnet18_full_aug",
   "quality": {
     "sharpness": 5.9,
     "brightness": 102.1,
@@ -21,10 +21,31 @@
         59,
         480,
         726
+      ],
+      [
+        168,
+        357,
+        480,
+        662
+      ],
+      [
+        103,
+        0,
+        372,
+        124
+      ],
+      [
+        32,
+        86,
+        170,
+        209
       ]
     ],
     "hulls": [
-      0.519
+      0.519,
+      0.148,
+      0.062,
+      0.018
     ]
   },
   "mode": "close",
@@ -32,5 +53,5 @@
   "decision": "RETAKE",
   "inference_ms": null,
   "counts": {},
-  "total_ms": 244.74
+  "total_ms": 238.07
 }

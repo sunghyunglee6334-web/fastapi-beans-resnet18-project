@@ -1,5 +1,5 @@
 {
-  "model_id": "artifacts/beans_resnet18",
+  "model_id": "artifacts/beans_resnet18_full_aug",
   "quality": {
     "sharpness": 2498.2,
     "brightness": 142.6,
@@ -43,28 +43,28 @@
         480
       ],
       "label": "healthy",
-      "score": 0.6369,
+      "score": 0.9918,
       "check": false,
       "all": [
         {
           "label": "healthy",
-          "score": 0.636943519115448
+          "score": 0.9918145537376404
         },
         {
           "label": "bean_rust",
-          "score": 0.24815838038921356
+          "score": 0.007935457862913609
         },
         {
           "label": "angular_leaf_spot",
-          "score": 0.11489810794591904
+          "score": 0.0002499492256902158
         }
       ]
     }
   ],
   "decision": "HEALTHY",
-  "inference_ms": 21.86,
+  "inference_ms": 17.93,
   "counts": {
     "healthy": 1
   },
-  "total_ms": 1077.75
+  "total_ms": 1069.34
 }
