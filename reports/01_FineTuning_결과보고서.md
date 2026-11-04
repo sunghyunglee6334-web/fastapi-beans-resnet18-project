@@ -12,7 +12,8 @@
 | 학습 데이터 | Train 1,034장 · Validation 133장 |
 | Best Validation Accuracy | **0.7669 (76.69%)** · epoch 2 · 선택 실험 Full Fine-tuning **0.9699** (7장) |
 | Test Accuracy | **0.7188** (92/128) · Full **0.9297** · 모델 확정 후 별도 스크립트로 1회 측정 (8장) |
-| 모델 저장 위치 | `artifacts/beans_resnet18/` |
+| 모델 저장 위치 | `artifacts/beans_resnet18/` (기준선) |
+| 최종 서비스 모델 | **Full + 강한 증강** `artifacts/beans_resnet18_full_aug` · Validation **0.9774** (모델 4개 중 1등) · Test 1회 **0.9531** (10장) |
 
 ## 1. 데이터 구성
 
@@ -160,7 +161,7 @@ python -m training.finetune --data dataset --output artifacts/beans_resnet18_ful
   - Validation 은 best epoch 선택에도 쓰였으므로 실제 일반화 성능은 별도 Test 로 확인 필요
   - lr 0.0002 는 Full 학습에 다소 큰 값일 수 있음 (가이드 예시 0.00005) · lr 비교는 미실시
   - 서비스(API · Worker)와 산출물 2 ~ 7 의 측정은 **A. Head-only 모델 기준** · B 는 비교 실험으로만 보관
-- 서비스 모델 전환 방법 (미실시 · 제안): `.env` `MODEL_PATH=artifacts/beans_resnet18_full` → `docker compose up -d --force-recreate web worker` · 캐시 키에 모델 경로가 포함돼 기존 캐시와 섞이지 않음
+- 서비스 모델 전환 방법: 증강 실험까지 마친 뒤 Validation 으로 최종 선택 → 10장 · `.env` `MODEL_PATH=artifacts/beans_resnet18_full_aug` → `docker compose up -d --force-recreate web worker` · 캐시 키에 모델 경로가 포함돼 기존 캐시와 섞이지 않음
 
 ![Full 학습 로그](evidence/train_log_full.png)
 ![Full training_report](evidence/training_report_full.png)
@@ -214,3 +215,28 @@ Head-only → Full 상승폭(Val +20.3%p · Test +21.1%p)이 커서 split 오류
 - 원인 분석 · 개선 전체 → [09 문제 분석 · 개선 보고서](09_문제분석_개선보고서.md)
 
 ![누수 점검](evidence/leak_check.png)
+
+## 10. 증강 실험 · 최종 모델 선택
+
+같은 코드 · 같은 데이터 · 같은 조건 (epoch 3 · batch 8 · lr 0.0002 · seed 42) 에서 증강만 바꿔 2개를 더 학습했습니다. 증강은 **Train 에만** 적용하고 Validation 은 그대로 둡니다.
+
+```bash
+python -m training.finetune --data dataset --output artifacts/beans_resnet18_full_aug --epochs 3 --batch-size 8 --augment --aug-mode strong
+python -m training.finetune --data dataset --output artifacts/beans_resnet18_full_aug_basic --epochs 3 --batch-size 8 --augment --aug-mode basic
+python tools/final_check.py      # 모델 4개 같은 Val 재계산 → 1등 선택 → 선택 모델만 Test 1회
+```
+
+| 모델 | 증강 | Validation (재계산) | Val 평균 점수 | Test |
+|---|---|---:|---:|---:|
+| A. Head-only | 없음 | 0.7669 (102/133) | 0.583 | 0.7188 (8장) |
+| B. Full | 없음 | 0.9699 (129/133) | 0.964 | 0.9297 (8장) |
+| **C. Full + 강한 증강 (최종)** | 확대 · 잘라내기 (448 · 50 ~ 100%) · 회전 25° · 밝기 · 대비 · 채도 · 블러 | **0.9774 (130/133)** | **0.963** | **0.9531 (122/128)** |
+| D. Full + 기본 증강 | 회전 15° · 좌우 반전 · 밝기 0.2 | 0.9774 (130/133) | 0.956 | 측정 안 함 |
+
+- 선택 규칙: Validation 정확도 1등 → 같으면 Validation 평균 점수 → **C** · Test 는 선택이 끝난 뒤 C 1개만 1회 (95% 신뢰구간 0.914 ~ 0.984)
+- Test 로 고르지 않았으므로 Test 0.9531 은 선택에 쓰이지 않은 성능 · 클래스별 지표 · 혼동행렬 → [final_models.json](data/final_models.json)
+- 서비스 전환: `.env` `MODEL_PATH=artifacts/beans_resnet18_full_aug` → `docker compose up -d --force-recreate web worker` · 같은 ResNet18 구조라 산출물 6 속도 측정은 그대로 유효
+- 원인 분석 (사람마다 점수가 다른 이유 = 증강 차이) → [09 7장](09_문제분석_개선보고서.md)
+
+![최종 결과](evidence/v2_final_result.png)
+
