@@ -8,3 +8,4 @@ artifacts/*
 media/jobs/*
 !media/jobs/.gitkeep
 *.db
+reports/scene/

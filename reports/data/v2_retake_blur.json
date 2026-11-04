@@ -1,0 +1,36 @@
+{
+  "model_id": "artifacts/beans_resnet18",
+  "quality": {
+    "sharpness": 5.9,
+    "brightness": 102.1,
+    "contrast": 32.0,
+    "ok": false,
+    "reasons": [
+      "blur"
+    ]
+  },
+  "scene": {
+    "mode": "close",
+    "leaf_ratio": 0.873,
+    "largest_hull": 0.519,
+    "similar": 1,
+    "whole_leaves": 1,
+    "boxes": [
+      [
+        0,
+        59,
+        480,
+        726
+      ]
+    ],
+    "hulls": [
+      0.519
+    ]
+  },
+  "mode": "close",
+  "leaves": [],
+  "decision": "RETAKE",
+  "inference_ms": null,
+  "counts": {},
+  "total_ms": 244.74
+}

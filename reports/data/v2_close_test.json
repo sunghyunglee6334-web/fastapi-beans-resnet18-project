@@ -1,0 +1,70 @@
+{
+  "model_id": "artifacts/beans_resnet18",
+  "quality": {
+    "sharpness": 2498.2,
+    "brightness": 142.6,
+    "contrast": 53.4,
+    "ok": true,
+    "reasons": []
+  },
+  "scene": {
+    "mode": "close",
+    "leaf_ratio": 0.644,
+    "largest_hull": 0.066,
+    "similar": 1,
+    "whole_leaves": 0,
+    "boxes": [
+      [
+        229,
+        319,
+        435,
+        480
+      ],
+      [
+        157,
+        346,
+        242,
+        462
+      ]
+    ],
+    "hulls": [
+      0.066,
+      0.021
+    ]
+  },
+  "mode": "close",
+  "leaves": [
+    {
+      "no": 1,
+      "box": [
+        229,
+        319,
+        435,
+        480
+      ],
+      "label": "healthy",
+      "score": 0.6369,
+      "check": false,
+      "all": [
+        {
+          "label": "healthy",
+          "score": 0.636943519115448
+        },
+        {
+          "label": "bean_rust",
+          "score": 0.24815838038921356
+        },
+        {
+          "label": "angular_leaf_spot",
+          "score": 0.11489810794591904
+        }
+      ]
+    }
+  ],
+  "decision": "HEALTHY",
+  "inference_ms": 21.86,
+  "counts": {
+    "healthy": 1
+  },
+  "total_ms": 1077.75
+}
