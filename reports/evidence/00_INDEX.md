@@ -2,10 +2,11 @@
 
 | 산출물 | 파일 |
 |---|---|
-| 1 Fine-tuning | test_metrics · ../data/test_metrics.json (Test 128장) · data_count · dup_check · train_log · training_report · model_folder · train_log_full · training_report_full |
+| 1 Fine-tuning | test_metrics · leak_check · leak_top_pairs · ../data/test_metrics.json (Test 128장) · data_count · dup_check · train_log · training_report · model_folder · train_log_full · training_report_full |
 | 2 아키텍처 | docker_ps · redis_pg_ready · celery_log · docker_ps_restored |
 | 3 API | swagger · api_async_202 · api_job_done · bad_image · not_found · err_413 · err_422 · redis_down_503 · redis_down_sync |
 | 4 DB | db_rows · db_rows_all · db_dbeaver · db_failed · db_schema |
 | 5 처리흐름 | ui_sync_* · ui_async_202_* · ui_async_done_* · celery_log |
 | 6 성능 | perf_result · ../figures/perf_compare.png · 원본 ../data/timings.csv |
-| 7 테스트 · 오류 | robust_result · ../figures/robust_sheet.jpg · pytest · bad_image · not_found · err_413 · err_422 · worker_stopped_restarted · redis_down_503 · redis_down_sync · db_failed · docker_ps_restored · ui_sync_cache_hit · ui_async_cache_hit |
+| 7 테스트 · 오류 | v2_summary · robust_result · ../figures/robust_sheet.jpg · pytest · bad_image · not_found · err_413 · err_422 · worker_stopped_restarted · redis_down_503 · redis_down_sync · db_failed · docker_ps_restored · ui_sync_cache_hit · ui_async_cache_hit |
+| 9 문제 분석 · 개선 | leak_check · leak_top_pairs · v2_far_original · v2_far_original_boxes · v2_close_test_boxes · v2_retake_blur_boxes · v2_summary · 원본 ../analysis/summary.json · ../data/v2_*.json |

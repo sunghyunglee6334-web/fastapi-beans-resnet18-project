@@ -195,3 +195,22 @@ python -m training.finetune --data dataset --output artifacts/beans_resnet18_ful
 - 이 결과로 서비스 모델을 바꾸지 않음 (Test 를 보고 선택하면 누수) · Full 전환은 별도 검증 데이터로 다시 확인 후 결정
 - 원본 기록: [`reports/data/test_metrics.json`](data/test_metrics.json) · 데이터셋 밖 사진 강건성 테스트 → [07 5장](07_기능테스트_오류분석.md)
 ![Test 128장 지표](evidence/test_metrics.png)
+
+## 9. 데이터 누수 점검 · 재채점
+
+Head-only → Full 상승폭(Val +20.3%p · Test +21.1%p)이 커서 split 오류 여부를 사진 1,295장 전부로 다시 점검했습니다 (`leak_check.py` · 결과 `reports/analysis/`).
+
+| 점검 | 결과 |
+|---|---|
+| 완전 중복 md5 | 0건 |
+| 거의 같은 사진 pHash 해밍거리 6 이하 | 0건 |
+| ImageNet 특징 유사도 0.95 이상 | 0장 (최대 val 0.870 · test 0.870) |
+| 학습 코드 test 사용 | 0줄 |
+| 재채점 | Val 0.7669 · 0.9699 / Test 0.7188 · 0.9297 (학습 기록과 동일) |
+| Train 재채점 | Head-only **0.774** (과소적합) · Full 0.993 |
+| Test 95% 신뢰구간 | Head-only 0.641 ~ 0.797 · Full 0.883 ~ 0.969 · 맥니마 p = 1.4e-05 |
+
+- train 과 가장 덜 닮은 Test 32장에서도 Full 0.844 · Head-only 0.688 → 누수가 아닌 실제 학습 효과
+- 원인 분석 · 개선 전체 → [09 문제 분석 · 개선 보고서](09_문제분석_개선보고서.md)
+
+![누수 점검](evidence/leak_check.png)
