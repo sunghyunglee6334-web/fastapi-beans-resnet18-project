@@ -20,6 +20,7 @@ MEDIA_DIR = BASE_DIR / "media" / "jobs"
 SCENE_CLOSE_HULL = float(os.getenv("SCENE_CLOSE_HULL", "0.22"))    # 가장 큰 잎이 이 비율 이상 → 근접
 SCENE_FAR_SIMILAR = int(os.getenv("SCENE_FAR_SIMILAR", "3"))       # 비슷한 크기 잎이 이 수 이상 → 원거리
 SCENE_LEAF_SOLIDITY = float(os.getenv("SCENE_LEAF_SOLIDITY", "0.85"))  # 속이 꽉 찬 잎 모양 기준 (잎맥 조각 거르기)
+SCENE_FAR_SMALL_LEAVES = int(os.getenv("SCENE_FAR_SMALL_LEAVES", "8"))  # 꽉 찬 작은 잎이 이 수 이상 → 빽빽한 밭 사진 = 원거리
 SCENE_MAX_LEAVES = int(os.getenv("SCENE_MAX_LEAVES", "8"))         # 원거리에서 분류할 최대 잎 수
 SCENE_CHECK_SCORE = float(os.getenv("SCENE_CHECK_SCORE", "0.5"))   # 잎 점수가 이보다 낮으면 CHECK
 SCENE_MIN_SHARPNESS = float(os.getenv("SCENE_MIN_SHARPNESS", "20"))

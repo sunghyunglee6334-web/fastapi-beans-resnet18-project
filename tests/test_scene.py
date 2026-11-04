@@ -43,6 +43,19 @@ def far_image():
     return img
 
 
+def dense_image(seed=0):
+    """빽빽한 밭 · 작은 잎 36장이 화면을 덮음 (큰 잎 0장 · 222222.webp 같은 경우)."""
+    rng = np.random.default_rng(seed)
+    img = np.full((600, 600, 3), (15, 35, 15), np.uint8)                   # 잎 사이 그늘
+    for y in range(55, 600, 105):
+        for x in range(55, 600, 105):
+            c = (60, int(rng.integers(130, 190)), 50)
+            ctr, ang = (x + int(rng.integers(-5, 5)), y + int(rng.integers(-5, 5))), int(rng.integers(0, 180))
+            cv2.ellipse(img, ctr, (60, 47), ang, 0, 360, c, -1)
+            cv2.ellipse(img, ctr, (60, 47), ang, 0, 360, (15, 35, 15), 5)
+    return img
+
+
 def to_png(rgb):
     buf = BytesIO()
     Image.fromarray(rgb).save(buf, format="PNG")
@@ -98,3 +111,11 @@ def test_v2_api(monkeypatch):
         assert close.json()["mode"] == "close" and len(close.json()["leaves"]) == 1
         assert client.post("/api/v2/classify/", files={"image": ("x.txt", b"bad", "text/plain")}).status_code == 400
         assert client.get("/api/sync/classify/").status_code == 405                      # v1 경로는 그대로
+
+
+def test_router_dense_canopy_is_far():
+    """큰 잎이 없어도 (whole 0) 작은 잎이 화면을 빽빽이 덮으면 원거리 → 잎마다 분류."""
+    for seed in range(3):
+        scene = analyze_scene(dense_image(seed))
+        assert scene.whole_leaves == 0
+        assert scene.mode == "far" and len(scene.boxes) >= 4

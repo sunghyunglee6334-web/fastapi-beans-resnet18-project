@@ -1,16 +1,60 @@
 {% extends "base.html" %}
 {% block title %}v2 장면 분석{% endblock %}
 {% block content %}
+<style>
+ .lt{border-collapse:collapse;margin:10px 0;min-width:520px}
+ .lt th,.lt td{border:1px solid #33415a;padding:6px 10px;text-align:center}
+ .lt th{background:#1c2638}
+ .ok{color:#4ec26a;font-weight:700}.sick{color:#ff6b6b;font-weight:700}.chk{color:#ffa94d;font-weight:700}
+ .chips span{display:inline-block;margin:0 8px 6px 0;padding:3px 10px;border-radius:12px;background:#1c2638}
+ .bar{display:inline-block;height:8px;background:#4ec26a;vertical-align:middle;margin-left:6px;border-radius:4px}
+ details summary{cursor:pointer;margin-top:12px}
+</style>
 <section class="panel"><h2>v2 장면 분석: 근접 / 원거리를 자동으로 나눠 잎마다 분류합니다</h2>
 <p>근접(잎 1장) = 사진 전체 분류 · 원거리(밭 · 여러 잎) = 잎을 자동 분리해 잎마다 분류 · 흐리거나 어두우면 재촬영 요청</p>
 <input id="image" type="file" accept="image/jpeg,image/png,image/webp">
 <button id="send">장면 분석</button>
 <p id="state">이미지를 선택하세요.</p>
 <p id="decision" style="font-size:1.3em;font-weight:700"></p>
+<div id="chips" class="chips"></div>
+<div id="table"></div>
+<p id="legend" hidden>사진의 동그라미 번호 = 표의 번호 · 색: <span class="ok">초록 healthy</span> · <span class="sick">빨강 병</span> · <span class="chk">주황 애매(점수 0.5 미만 → 사람 확인)</span></p>
 <img id="result" class="preview" hidden>
-<pre id="output">{}</pre></section>
+<details><summary>원본 JSON 보기 (개발자용 · 맨 위가 결과 요약)</summary><pre id="output">{}</pre></details></section>
 <script>
 const fileEl=document.getElementById('image');
+const cls=l=>l.check?'chk':(l.label==='healthy'?'ok':'sick');
+const pct=s=>(s*100).toFixed(1)+'%';
+function table(leaves){
+ if(!leaves.length)return '';
+ let h='<table class="lt"><tr><th>번호</th><th>결과 (1등)</th><th>점수</th><th>2등</th><th>3등</th><th>사람 확인</th></tr>';
+ for(const l of leaves){
+  const a=l.all||[];
+  h+=`<tr><td>${l.no}</td><td class="${cls(l)}">${l.label}</td>`+
+     `<td>${l.score.toFixed(2)}<span class="bar" style="width:${Math.round(l.score*80)}px"></span></td>`+
+     `<td>${a[1]?a[1].label+' '+a[1].score.toFixed(2):'-'}</td><td>${a[2]?a[2].label+' '+a[2].score.toFixed(2):'-'}</td>`+
+     `<td class="${l.check?'chk':''}">${l.check?'필요':'-'}</td></tr>`;
+ }
+ // 종합 평균: 잎들의 3개 클래스 확률을 클래스별로 평균 → 큰 순서로 1·2·3등
+ const sum={};for(const l of leaves)for(const x of (l.all||[]))sum[x.label]=(sum[x.label]||0)+x.score;
+ const avg=Object.entries(sum).map(([k,v])=>[k,v/leaves.length]).sort((a,b)=>b[1]-a[1]);
+ const top=avg[0]||['-',0];const nChk=leaves.filter(l=>l.check).length;
+ const c=top[1]<0.5?'chk':(top[0]==='healthy'?'ok':'sick');
+ h+=`<tr style="border-top:3px solid #6b7a99;background:#1c2638;font-weight:700"><td>종합 평균<br><small>(${leaves.length}장)</small></td>`+
+    `<td class="${c}">${top[0]}</td><td>${top[1].toFixed(2)}<span class="bar" style="width:${Math.round(top[1]*80)}px"></span></td>`+
+    `<td>${avg[1]?avg[1][0]+' '+avg[1][1].toFixed(2):'-'}</td><td>${avg[2]?avg[2][0]+' '+avg[2][1].toFixed(2):'-'}</td>`+
+    `<td class="${nChk?'chk':''}">${nChk?nChk+'장 필요':'-'}</td></tr>`;
+ return h+'</table>';
+}
+// 결과를 위로 · 숫자 목록([x1,y1,x2,y2] 같은 것)은 한 줄로
+function pretty(d){
+ const order=['decision','mode','counts','leaves','model_id','inference_ms','total_ms','quality','scene'];
+ const o={};for(const k of order)if(k in d)o[k]=d[k];for(const k in d)if(!(k in o))o[k]=d[k];
+ if(o.leaves)o.leaves=o.leaves.map(l=>({no:l.no,label:l.label,score:l.score,check:l.check,
+   all:(l.all||[]).map(x=>`${x.label} ${x.score.toFixed(4)}`),box:l.box}));
+ return JSON.stringify(o,null,2).replace(/\[\s*([-\d.,\s]+?)\s*\]/g,(m,g)=>'['+g.split(/,\s*/).join(', ')+']')
+   .replace(/"all": \[\s*([^\]]*?)\s*\]/g,(m,g)=>'"all": ['+g.split(/,\s*\n\s*/).join(', ')+']');
+}
 document.getElementById('send').onclick=async()=>{
  const file=fileEl.files[0];if(!file){alert('이미지를 선택하세요');return;}
  const button=document.getElementById('send');button.disabled=true;
@@ -21,10 +65,14 @@ document.getElementById('send').onclick=async()=>{
   state.textContent=`HTTP ${res.status} / 응답까지 ${Math.round(performance.now()-started)}ms`;
   if(res.ok){
    document.getElementById('decision').textContent=`판정 ${data.decision} · 경로 ${data.mode} · 잎 ${data.leaves.length}장`;
+   document.getElementById('chips').innerHTML=Object.entries(data.counts||{}).map(([k,v])=>`<span>${k} ${v}장</span>`).join('')+
+     `<span>모델 ${String(data.model_id).split('/').pop()}</span>`;
+   document.getElementById('table').innerHTML=table(data.leaves);
+   document.getElementById('legend').hidden=!data.leaves.length;
    if(data.image_jpg_base64){const img=document.getElementById('result');img.src='data:image/jpeg;base64,'+data.image_jpg_base64;img.hidden=false;}
    delete data.image_jpg_base64;
   }
-  out.textContent=JSON.stringify(data,null,2);
+  out.textContent=pretty(data);
  }catch(err){state.textContent=`요청 실패: ${err}`;}finally{button.disabled=false;}
 };
 </script>

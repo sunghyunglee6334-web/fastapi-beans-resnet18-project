@@ -10,6 +10,7 @@
       ↓
     ④ 길 나누기    가장 큰 잎이 화면을 크게 차지하면 close (근접 · 잎 1장)
                    비슷한 크기의 잎이 여러 장 + 속이 꽉 찬 잎 모양 조각이 있으면 far (원거리 · 밭 사진)
+                   또는 잎이 빽빽한 밭 사진: 속이 꽉 찬 작은 잎(화면 1.5% 이상)이 SCENE_FAR_SMALL_LEAVES 장 이상
                    (잎맥 때문에 쪼개진 조각은 쐐기 모양 = solidity 낮음 → 원거리로 보지 않음)
 """
 from dataclasses import asdict, dataclass, field
@@ -17,7 +18,7 @@ from dataclasses import asdict, dataclass, field
 import cv2
 import numpy as np
 
-from .config import (SCENE_CLOSE_HULL, SCENE_FAR_SIMILAR, SCENE_MAX_LEAVES, SCENE_LEAF_SOLIDITY,
+from .config import (SCENE_CLOSE_HULL, SCENE_FAR_SIMILAR, SCENE_MAX_LEAVES, SCENE_LEAF_SOLIDITY, SCENE_FAR_SMALL_LEAVES,
                      SCENE_MIN_BRIGHT, SCENE_MAX_BRIGHT, SCENE_MIN_CONTRAST, SCENE_MIN_SHARPNESS)
 
 WORK_SIZE = 512            # 계산용 긴 변 (원본 크기와 상관없이 같은 기준으로 잼)
@@ -25,6 +26,7 @@ HUE_RANGE = (18, 95)       # OpenCV Hue 0 ~ 180 · 노랑(병든 잎) ~ 초록
 MIN_SAT, MIN_VAL = 45, 45  # 회색 · 그림자 제외
 MIN_LEAF = 0.012           # 화면의 1.2% 보다 작은 조각은 잎으로 안 봄
 MIN_CROP = 0.02            # 원거리에서 분류할 잎의 최소 크기 (볼록 껍질 기준 2% · 가장 큰 잎의 30% 이상)
+SMALL_LEAF = 0.015         # 빽빽한 밭 사진에서 잎 1장으로 셀 최소 크기 (속이 꽉 찬 모양일 때)
 PAD = 0.08                 # 잎을 잘라낼 때 여백 8%
 
 
@@ -131,13 +133,20 @@ def analyze_scene(rgb: np.ndarray) -> Scene:
     largest = segs[0][0]
     similar = sum(1 for r, _, _ in segs if r >= 0.5 * largest)
     whole = sum(1 for r, _, sol in segs if r >= 0.08 and sol >= SCENE_LEAF_SOLIDITY)
-    far = largest < SCENE_CLOSE_HULL and similar >= SCENE_FAR_SIMILAR and whole >= 1
-    mode = "far" if far else "close"
+    small_whole = sum(1 for r, _, sol in segs if r >= SMALL_LEAF and sol >= SCENE_LEAF_SOLIDITY)
+    spread = largest < SCENE_CLOSE_HULL and similar >= SCENE_FAR_SIMILAR and whole >= 1        # 잎 여러 장
+    dense = largest < SCENE_CLOSE_HULL and small_whole >= SCENE_FAR_SMALL_LEAVES and leaf_ratio >= 0.6  # 빽빽한 밭
+    mode = "far" if (spread or dense) else "close"
+
+    def keep(r, sol):  # 원거리에서 잘라 분류할 조각: 큰 조각 또는 속이 꽉 찬 작은 잎
+        return r >= max(MIN_CROP, 0.3 * largest) or (r >= SMALL_LEAF and sol >= SCENE_LEAF_SOLIDITY)
 
     boxes, hulls = [], []
-    for r, (x, y, w, h), _ in segs:
-        if len(boxes) >= SCENE_MAX_LEAVES or (boxes and r < max(MIN_CROP, 0.3 * largest)):
+    for r, (x, y, w, h), sol in segs:
+        if len(boxes) >= SCENE_MAX_LEAVES:
             break
+        if boxes and not keep(r, sol):
+            continue
         px, py = int(w * PAD), int(h * PAD)
         x1, y1 = max(0, x - px), max(0, y - py)
         x2, y2 = min(bgr.shape[1], x + w + px), min(bgr.shape[0], y + h + py)
@@ -146,21 +155,54 @@ def analyze_scene(rgb: np.ndarray) -> Scene:
     return Scene(mode, round(leaf_ratio, 3), round(largest, 3), similar, whole, boxes, hulls)
 
 
+def _label_color(label: str | None):
+    """잎 결과 색 (BGR) · healthy 초록 · 병 빨강 · 애매(?) 주황 · 결과 없음 파랑."""
+    if not label:
+        return (230, 130, 30)
+    if label.rstrip().endswith("?"):
+        return (0, 150, 255)
+    return (60, 170, 60) if label.startswith("healthy") else (40, 40, 220)
+
+
 def draw_scene(rgb: np.ndarray, scene: Scene, labels=None, quality: Quality | None = None) -> np.ndarray:
-    """판별 결과를 그린 BGR 영상 (화면 · 증빙용) · labels = 잎마다 "bean_rust 0.91" 같은 글자."""
+    """판별 결과를 그린 BGR 영상 (화면 · 증빙용).
+
+    박스가 겹쳐도 읽히도록 사진에는 **번호 동그라미만** 그리고, 점수는 화면의 표 (leaves) 에서 본다.
+    색 = 결과 (healthy 초록 · 병 빨강 · 애매 주황). labels = 잎마다 "bean_rust 0.91" 같은 글자.
+    """
     out = cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR).copy()
-    t = max(2, round(max(out.shape[:2]) / 320))
-    color = {"close": (60, 170, 60), "far": (230, 130, 30)}.get(scene.mode, (0, 0, 220))
+    h, w = out.shape[:2]
+    t = max(2, round(max(h, w) / 400))
     boxes = scene.boxes if scene.mode == "far" else scene.boxes[:1]
-    for i, (x1, y1, x2, y2) in enumerate(boxes):
-        cv2.rectangle(out, (x1, y1), (x2, y2), color, t)
-        text = f"{i + 1}" + (f" {labels[i]}" if labels and i < len(labels) else "")
-        org = (x1 + 4, min(y2 - 4, y1 + 14 * t))
-        cv2.putText(out, text, org, cv2.FONT_HERSHEY_SIMPLEX, 0.45 * t, (255, 255, 255), t + 2)
-        cv2.putText(out, text, org, cv2.FONT_HERSHEY_SIMPLEX, 0.45 * t, color, max(1, t - 1))
-    head = f"{scene.mode.upper()}  hull {scene.largest_hull:.2f}  similar {scene.similar}  whole {scene.whole_leaves}  leaves {len(boxes)}"
+    colors = [_label_color(labels[i] if labels and i < len(labels) else None) for i in range(len(boxes))]
+    for (x1, y1, x2, y2), c in zip(boxes, colors):
+        cv2.rectangle(out, (x1, y1), (x2, y2), c, t)
+
+    r = max(14, round(max(h, w) / 45))                  # 번호 동그라미 반지름
+    placed = []
+    for i, ((x1, y1, x2, y2), c) in enumerate(zip(boxes, colors)):
+        cx, cy = (x1 + x2) // 2, (y1 + y2) // 2          # 박스 가운데에서 시작
+        for step in range(40):                           # 다른 번호와 겹치면 조금씩 옮김
+            if all((cx - px) ** 2 + (cy - py) ** 2 >= (2.3 * r) ** 2 for px, py in placed):
+                break
+            cx += round(1.2 * r) if step % 2 == 0 else 0
+            cy += round(1.2 * r) if step % 2 == 1 else 0
+            if cx > x2 - r or cx > w - r:
+                cx = max(x1 + r, r)
+            if cy > y2 - r or cy > h - r:
+                cy = max(y1 + r, r)
+        placed.append((cx, cy))
+        cv2.circle(out, (cx, cy), r, (255, 255, 255), -1)
+        cv2.circle(out, (cx, cy), r, c, max(2, t))
+        text = str(i + 1)
+        fs = r / 22
+        (tw, th), _ = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, fs, max(2, t))
+        cv2.putText(out, text, (cx - tw // 2, cy + th // 2), cv2.FONT_HERSHEY_SIMPLEX, fs, c, max(2, t))
+
+    head = f"{scene.mode.upper()}  leaves {len(boxes)}"
     if quality is not None and not quality.ok:
         head = "RETAKE " + ",".join(quality.reasons) + "  |  " + head
-    cv2.rectangle(out, (0, 0), (out.shape[1], 13 * t), (0, 0, 0), -1)
-    cv2.putText(out, head, (6, 10 * t), cv2.FONT_HERSHEY_SIMPLEX, 0.36 * t, (255, 255, 255), max(1, t // 2))
+    bar = max(24, round(h / 22))
+    cv2.rectangle(out, (0, 0), (w, bar), (0, 0, 0), -1)
+    cv2.putText(out, head, (8, round(bar * 0.72)), cv2.FONT_HERSHEY_SIMPLEX, bar / 40, (255, 255, 255), max(1, t // 2))
     return out
