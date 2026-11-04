@@ -82,9 +82,9 @@ Train **1,034장** · Validation **133장**으로 먼저 평가 필수 기준선
 
 ### 작동 화면
 
-![작동 화면 · 동기 · 비동기 · DB 기록](reports/figures/screens.png)
+![작동 화면 · 동기 · 비동기 · DB 기록 · v2 장면 분석](reports/figures/screens.png)
 
-*① 동기는 응답 안에 결과가 포함되고, ② 비동기는 202 접수 후 1초 간격 상태 조회로 done 을 확인합니다. ③ 비동기 결과는 PostgreSQL `image_jobs` 에 기록되며, 캐시 HIT 행은 추론시간이 NULL 입니다.*
+*① 동기는 응답 안에 결과가 포함되고, ② 비동기는 202 접수 후 1초 간격 상태 조회로 done 을 확인합니다. ③ 비동기 결과는 PostgreSQL `image_jobs` 에 기록되며, 캐시 HIT 행은 추론시간이 NULL 입니다. ④ v2 장면 분석은 원거리 사진을 잎마다 나눠 번호 · 점수 표 · 종합 평균으로 보여줍니다 (인터넷 사진은 블러 처리).*
 전체 캡처 → [증빙 목록](reports/evidence/00_INDEX.md)
 
 <br>
