@@ -1,6 +1,8 @@
 <div align="center">
 
-# 콩잎 이미지 분류 Vision AI API · Fine-tuning부터 장면 분석 서빙까지
+# 콩잎 병해 분류 Vision AI API
+
+**ResNet-18 Fine-tuning · 동기 / 비동기 서빙 · v2 장면 분석**
 
 </div>
 
