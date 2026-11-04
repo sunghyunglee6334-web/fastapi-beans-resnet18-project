@@ -11,6 +11,16 @@
 
 ## 프로젝트 소개
 
+### Architecture
+
+FastAPI 는 요청 검증 · 응답만 맡고, 오래 걸리는 추론은 Redis 브로커를 거쳐 Celery Worker 가 처리합니다. 같은 이미지 · 같은 모델은 Redis 캐시에서 바로 돌려주고, 비동기 작업의 상태와 결과는 PostgreSQL 에 남깁니다.
+
+![콩잎 이미지 분류 Vision AI API Architecture](reports/figures/architecture.png)
+
+구성요소 역할 · 실행환경 → [02 시스템 아키텍처](reports/02_시스템_아키텍처.md) · 버튼 클릭 후 코드 흐름 → [05 처리흐름](reports/05_AI버튼_처리흐름.md)
+
+<br>
+
 ### 개요
 
 교과 9 평가 프로젝트입니다. 콩잎 사진을 **각진잎반점병(angular_leaf_spot) · 녹병(bean_rust) · 정상(healthy) 3클래스**로 분류하는 이미지 분류 서비스를 만들었습니다. Hugging Face `microsoft/resnet-18` 의 ImageNet 1,000개 출력층을 **3개로 교체해 Fine-tuning** 하고, 학습한 모델을 **FastAPI 동기 API 와 Celery 비동기 작업 큐**에 연결했습니다. Redis 캐시 · PostgreSQL 작업 이력까지 Docker Compose 로 한 번에 실행합니다. 결과를 분석해 찾은 문제 5개(정확도 · 누수 의심 · 데이터셋 밖 사진 · 빽빽한 밭 사진 · 모델 선택)를 원인 분석 → 개선 → 재검증까지 진행했습니다. 밭에서 멀리 찍은 사진도 잎을 자동으로 나눠 판단하는 **v2 장면 분석**을 추가했고, 모델 4개를 같은 Validation 으로 비교해 **Full + 강한 증강 모델(Test 0.9531)** 을 최종 서비스 모델로 선택했습니다.
@@ -89,40 +99,7 @@ Train **1,034장** · Validation **133장**으로 먼저 평가 필수 기준선
 
 <br>
 
-### 개발자 소개
-
-| 이름 | 역할 | 담당 | 주요 산출물 |
-|---|---|---|---|
-| Sung Hyung Lee | 1인 개발 · AI 서빙 | 데이터 준비 · Fine-tuning · 증강 실험 · 모델 선택 · FastAPI / Celery / Redis / PostgreSQL 서빙 · 성능 · 장애 검증 · 누수 점검 · v2 장면 분석 · 문서 | 산출물 01 ~ 09 · README · 성능 그래프 · 증빙 캡처 |
-
-<br>
-
-### 바로가기
-
-| 용도 | 바로가기 |
-|---|---|
-| 처음 실행 | [빠른 시작](#quick-start) → [6. 실행 · 확인](#run-check) |
-| 성과 · 근거 | [문제 분석 · 개선](#문제-분석--개선) · [핵심 결과 그래프](#핵심-결과-그래프) · [8. 성능 비교](#perf) · [9. 검증 결과](#verify) |
-| 구조 · 산출물 | [Architecture](#architecture) · [산출물](#산출물) · [2. 폴더 구조](#folders) · [10. WBS 일정](#wbs) |
-| 문제 대응 | [주의사항](#caution) |
-
-
-<br><br>
-
-## Architecture
-
-FastAPI 는 요청 검증 · 응답만 맡고, 오래 걸리는 추론은 Redis 브로커를 거쳐 Celery Worker 가 처리합니다. 같은 이미지 · 같은 모델은 Redis 캐시에서 바로 돌려주고, 비동기 작업의 상태와 결과는 PostgreSQL 에 남깁니다.
-
-![콩잎 이미지 분류 Vision AI API Architecture](reports/figures/architecture.png)
-
-구성요소 역할 · 실행환경 → [02 시스템 아키텍처](reports/02_시스템_아키텍처.md) · 버튼 클릭 후 코드 흐름 → [05 처리흐름](reports/05_AI버튼_처리흐름.md)
-
-<br>
-
-
-<br><br>
-
-## 산출물
+### 산출물
 
 | 번호 | 산출물 | 핵심 |
 |---|---|---|
@@ -138,12 +115,30 @@ FastAPI 는 요청 검증 · 응답만 맡고, 오래 걸리는 추론은 Redis 
 
 추가 산출물: [최종 결과 그림](reports/evidence/v2_final_result.png) · [모델 4개 비교 · 최종 Test](reports/data/final_models.json) · [외부 사진 v1 vs v2](reports/data/v2_external.json) · [누수 점검](reports/analysis/summary.json) · [v2 결과](reports/data/v2_far_original.json) · [Test 지표](reports/data/test_metrics.json) · [강건성 테스트](reports/figures/robust_sheet.jpg) · [성능 그래프](reports/figures/perf_compare.png) · [Architecture](reports/figures/architecture.png) · [WBS](reports/figures/wbs_schedule.png) · [증빙 목록](reports/evidence/00_INDEX.md) · `perf.py` · `perf_chart.py`
 
+<br>
+
+### 개발자 소개
+
+| 이름 | 역할 | 담당 | 주요 산출물 |
+|---|---|---|---|
+| 이성형<br>(Sung Hyung Lee) | 1인 개발 · AI 서빙 | 데이터 준비 · Fine-tuning · 증강 실험 · 모델 선택 · FastAPI / Celery / Redis / PostgreSQL 서빙 · 성능 · 장애 검증 · 누수 점검 · v2 장면 분석 · 문서 | 산출물 01 ~ 09 · README · 성능 그래프 · 증빙 캡처 |
+
+<br>
+
+### 바로가기
+
+| 용도 | 바로가기 |
+|---|---|
+| 처음 실행 | [빠른 시작](#quick-start) → [6. 실행 · 확인](#run-check) |
+| 성과 · 근거 | [문제 분석 · 개선](#문제-분석--개선) · [핵심 결과 그래프](#핵심-결과-그래프) · [8. 성능 비교](#perf) · [9. 검증 결과](#verify) |
+| 구조 · 산출물 | [Architecture](#architecture) · [산출물](#산출물) · [2. 폴더 구조](#folders) · [10. WBS 일정](#wbs) |
+| 문제 대응 | [11. 주의사항](#caution) |
 
 <br><br>
 
 <a id="quick-start"></a>
-<details>
-<summary><b>빠른 시작</b> — 받기 · 설치 → 데이터 · 학습 → <code>docker compose up</code> (데이터 · 모델 · <code>.env</code> 는 저장소에 없음)</summary>
+
+## 빠른 시작
 
 준비물: Windows 11 + WSL2 Ubuntu + **Docker Desktop** (Settings → Resources → WSL integration → Ubuntu 켜기). NVIDIA GPU 가 있으면 학습이 빨라지며, 없으면 CPU 로 학습합니다.
 
@@ -182,21 +177,7 @@ docker compose ps
 
 4개 서비스가 `Up` 이면 http://127.0.0.1:8000/vision/sync/ 에서 콩잎 사진을 올려 확인합니다. 밭 사진처럼 잎이 여러 장인 사진은 http://127.0.0.1:8000/vision/scene/ 에서 확인합니다.
 
-</details>
-
-<a id="caution"></a>
-<details>
-<summary><b>주의사항</b> — <code>.env</code> · 데이터 · 모델 Git 제외 · 볼륨 삭제 금지 · 모델 변경 · 외부 사진 · 한계</summary>
-
-- `.env` · 비밀번호는 Git 에 올리지 않습니다 (`.env.example` 만 공유)
-- 데이터셋 · 학습 가중치는 용량이 커서 Git 에서 제외했습니다 → [빠른 시작](#quick-start) 2단계로 다시 만듭니다
-- `docker compose down -v` 는 PostgreSQL · Redis 볼륨을 지우므로 사용하지 않습니다 (중지는 `docker compose stop`)
-- 모델을 바꾸면 web · worker 를 모두 다시 만들어야 합니다 (프로세스마다 모델을 따로 로드) · 최종 서비스 모델은 `MODEL_PATH=artifacts/beans_resnet18_full_aug`
-- 외부(인터넷) 사진은 정답 라벨이 없어 정확도를 계산하지 않았습니다 · 원본 사진은 저작권 때문에 Git 에 올리지 않고 결과 숫자만 남겼습니다
-- 학습 데이터와 촬영 환경이 다른 사진(밭 · 흙 배경)은 v2 장면 분석(`/vision/scene/`)을 사용합니다 · 잎별 정확도는 분류 모델 성능에 따르며 애매하면 CHECK 로 표시합니다 → [09 5장](reports/09_문제분석_개선보고서.md)
-- v2 근접 / 원거리 판별 · 잎 분리는 OpenCV 규칙 기반이라 저해상도 · 노이즈 사진에서 판별이 틀릴 수 있습니다 · HSV 병반 면적비 · CNN + ML 융합은 설계 제안입니다 → [08 최종보고서 8장](reports/08_최종기술보고서.md)
-
-</details>
+<br><br>
 
 <a id="features"></a>
 <details>
@@ -424,5 +405,19 @@ Head-only → Full 상승폭(+21.1%p)이 커서 사진 1,295장 전부로 다시
 월 · 화는 교과 9 Vision · FastAPI · Redis · Celery 학습 기간이며, 수요일부터 목요일 오전까지 평가 작업을 하고 목요일 오후에 발표합니다.
 
 ![콩잎 이미지 분류 Vision AI API WBS 일정](reports/figures/wbs_schedule.png)
+
+</details>
+
+<a id="caution"></a>
+<details>
+<summary><b>11. 주의사항</b> — <code>.env</code> · 데이터 · 모델 Git 제외 · 볼륨 삭제 금지 · 모델 변경 · 외부 사진 · 한계</summary>
+
+- `.env` · 비밀번호는 Git 에 올리지 않습니다 (`.env.example` 만 공유)
+- 데이터셋 · 학습 가중치는 용량이 커서 Git 에서 제외했습니다 → [빠른 시작](#quick-start) 2단계로 다시 만듭니다
+- `docker compose down -v` 는 PostgreSQL · Redis 볼륨을 지우므로 사용하지 않습니다 (중지는 `docker compose stop`)
+- 모델을 바꾸면 web · worker 를 모두 다시 만들어야 합니다 (프로세스마다 모델을 따로 로드) · 최종 서비스 모델은 `MODEL_PATH=artifacts/beans_resnet18_full_aug`
+- 외부(인터넷) 사진은 정답 라벨이 없어 정확도를 계산하지 않았습니다 · 원본 사진은 저작권 때문에 Git 에 올리지 않고 결과 숫자만 남겼습니다
+- 학습 데이터와 촬영 환경이 다른 사진(밭 · 흙 배경)은 v2 장면 분석(`/vision/scene/`)을 사용합니다 · 잎별 정확도는 분류 모델 성능에 따르며 애매하면 CHECK 로 표시합니다 → [09 5장](reports/09_문제분석_개선보고서.md)
+- v2 근접 / 원거리 판별 · 잎 분리는 OpenCV 규칙 기반이라 저해상도 · 노이즈 사진에서 판별이 틀릴 수 있습니다 · HSV 병반 면적비 · CNN + ML 융합은 설계 제안입니다 → [08 최종보고서 8장](reports/08_최종기술보고서.md)
 
 </details>
