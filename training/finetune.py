@@ -1,5 +1,5 @@
 """예: python -m training.finetune --data dataset --epochs 3 --output artifacts/beans_resnet18
-증강: python -m training.finetune --data dataset --epochs 8 --lr 0.00005 --augment --output artifacts/beans_resnet18_aug"""
+증강: python -m training.finetune --data dataset --epochs 3 --augment --aug-mode basic --output artifacts/beans_resnet18_full_aug_basic"""
 import argparse
 import json
 import random
@@ -12,9 +12,17 @@ from transformers import AutoImageProcessor, AutoModelForImageClassification
 BASE_MODEL = "microsoft/resnet-18"
 EXTS = {".jpg", ".jpeg", ".png", ".webp"}
 
-def build_augment():
-    """--augment 일 때만 Train 에 적용 · 흐림 · 밝기 · 회전 · 확대에 강하게 (Val 에는 적용 안 함)."""
+def build_augment(mode="strong"):
+    """Train 에만 적용 (Val 에는 적용 안 함).
+    basic  = 강사님 안내 (회전 · 좌우 반전 · 밝기 변화)
+    strong = basic + 확대 · 잘라내기 · 대비 · 채도 · 블러 (흐림 · 원거리 대비)"""
     from torchvision import transforms as T
+    if mode == "basic":
+        return T.Compose([
+            T.RandomHorizontalFlip(),
+            T.RandomRotation(15),
+            T.ColorJitter(brightness=0.2),
+        ])
     return T.Compose([
         T.RandomResizedCrop(448, scale=(0.5, 1.0)),       # 일부만 보이거나 멀리 찍힌 잎
         T.RandomHorizontalFlip(),
@@ -63,7 +71,7 @@ def run(args):
         raise ValueError("클래스 폴더가 2개 이상 필요합니다.")
 
     processor = AutoImageProcessor.from_pretrained(BASE_MODEL)
-    train_set = FolderImages(train_root, classes, processor, build_augment() if args.augment else None)
+    train_set = FolderImages(train_root, classes, processor, build_augment(args.aug_mode) if args.augment else None)
     val_set = FolderImages(data / "val", classes, processor)
 
     train_counts = {n: sum(label == i for _, label in train_set.records) for i, n in enumerate(classes)}
@@ -151,6 +159,7 @@ def run(args):
                 "best_val_accuracy": best_acc,
                 "freeze_backbone": bool(args.freeze_backbone),
                 "augment": bool(args.augment),
+                "aug_mode": args.aug_mode if args.augment else None,
                 "lr": args.lr,
                 "epochs": args.epochs,
                 "history": history
@@ -171,5 +180,7 @@ if __name__ == "__main__":
     parser.add_argument("--batch-size", type=int, default=8)
     parser.add_argument("--lr", type=float, default=2e-4)
     parser.add_argument("--freeze-backbone", action="store_true")
-    parser.add_argument("--augment", action="store_true", help="Train 에만 흐림 · 밝기 · 회전 · 확대 증강")
+    parser.add_argument("--augment", action="store_true", help="Train 에만 증강 적용")
+    parser.add_argument("--aug-mode", choices=["basic", "strong"], default="strong",
+                        help="basic = 회전 · 반전 · 밝기 (강사님 안내) · strong = + 확대 · 대비 · 블러")
     run(parser.parse_args())

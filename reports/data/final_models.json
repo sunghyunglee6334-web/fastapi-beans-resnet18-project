@@ -1,0 +1,197 @@
+{
+  "rule": "모델 선택 = Validation 1등 · Test 는 선택 뒤 선택 모델만 1회",
+  "val_count": 133,
+  "models": {
+    "headonly": {
+      "path": "artifacts/beans_resnet18",
+      "name": "Head-only (분류층만)",
+      "trained_params": 1539,
+      "augment": null,
+      "epochs": 3,
+      "history": [
+        {
+          "epoch": 1,
+          "loss": 0.9924,
+          "val_accuracy": 0.6617
+        },
+        {
+          "epoch": 2,
+          "loss": 0.8108,
+          "val_accuracy": 0.7669
+        },
+        {
+          "epoch": 3,
+          "loss": 0.7078,
+          "val_accuracy": 0.7669
+        }
+      ],
+      "val_report": 0.7669,
+      "val": {
+        "correct": 102,
+        "accuracy": 0.7669,
+        "ci95": [
+          0.6917,
+          0.8421
+        ],
+        "mean_top_score": 0.583
+      }
+    },
+    "full": {
+      "path": "artifacts/beans_resnet18_full",
+      "name": "Full (전체 학습)",
+      "trained_params": 11178051,
+      "augment": null,
+      "epochs": 3,
+      "history": [
+        {
+          "epoch": 1,
+          "loss": 0.4229,
+          "val_accuracy": 0.9323
+        },
+        {
+          "epoch": 2,
+          "loss": 0.2073,
+          "val_accuracy": 0.9474
+        },
+        {
+          "epoch": 3,
+          "loss": 0.107,
+          "val_accuracy": 0.9699
+        }
+      ],
+      "val_report": 0.9699,
+      "val": {
+        "correct": 129,
+        "accuracy": 0.9699,
+        "ci95": [
+          0.9398,
+          0.9925
+        ],
+        "mean_top_score": 0.9639
+      }
+    },
+    "full_aug_strong": {
+      "path": "artifacts/beans_resnet18_full_aug",
+      "name": "Full + 강한 증강",
+      "trained_params": 11178051,
+      "augment": "strong",
+      "epochs": 3,
+      "history": [
+        {
+          "epoch": 1,
+          "loss": 0.5098,
+          "val_accuracy": 0.8045
+        },
+        {
+          "epoch": 2,
+          "loss": 0.3161,
+          "val_accuracy": 0.9398
+        },
+        {
+          "epoch": 3,
+          "loss": 0.3011,
+          "val_accuracy": 0.9774
+        }
+      ],
+      "val_report": 0.9774,
+      "val": {
+        "correct": 130,
+        "accuracy": 0.9774,
+        "ci95": [
+          0.9474,
+          1.0
+        ],
+        "mean_top_score": 0.963
+      }
+    },
+    "full_aug_basic": {
+      "path": "artifacts/beans_resnet18_full_aug_basic",
+      "name": "Full + 기본 증강 (회전15·반전·밝기)",
+      "trained_params": 11178051,
+      "augment": "basic",
+      "epochs": 3,
+      "history": [
+        {
+          "epoch": 1,
+          "loss": 0.4331,
+          "val_accuracy": 0.9323
+        },
+        {
+          "epoch": 2,
+          "loss": 0.2078,
+          "val_accuracy": 0.9774
+        },
+        {
+          "epoch": 3,
+          "loss": 0.2196,
+          "val_accuracy": 0.9774
+        }
+      ],
+      "val_report": 0.9774,
+      "val": {
+        "correct": 130,
+        "accuracy": 0.9774,
+        "ci95": [
+          0.9474,
+          1.0
+        ],
+        "mean_top_score": 0.9555
+      }
+    }
+  },
+  "chosen": "full_aug_strong",
+  "chosen_test": {
+    "count": 128,
+    "correct": 122,
+    "accuracy": 0.9531,
+    "ci95": [
+      0.9139,
+      0.9844
+    ],
+    "mean_top_score": 0.9656,
+    "per_class": {
+      "angular_leaf_spot": {
+        "precision": 0.9762,
+        "recall": 0.9535,
+        "f1": 0.9647,
+        "n": 43
+      },
+      "bean_rust": {
+        "precision": 0.8936,
+        "recall": 0.9767,
+        "f1": 0.9333,
+        "n": 43
+      },
+      "healthy": {
+        "precision": 1.0,
+        "recall": 0.9286,
+        "f1": 0.963,
+        "n": 42
+      }
+    },
+    "confusion_matrix": {
+      "rows=actual, cols=pred": [
+        "angular_leaf_spot",
+        "bean_rust",
+        "healthy"
+      ],
+      "values": [
+        [
+          41,
+          2,
+          0
+        ],
+        [
+          1,
+          42,
+          0
+        ],
+        [
+          0,
+          3,
+          39
+        ]
+      ]
+    }
+  }
+}

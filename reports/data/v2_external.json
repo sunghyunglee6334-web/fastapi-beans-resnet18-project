@@ -1,0 +1,132 @@
+{
+  "folder": "외부사진 (인터넷 사진 · 원본은 Git 제외)",
+  "photos": [
+    {
+      "file": "111.jpeg",
+      "v1_whole_image": {
+        "headonly": {
+          "label": "bean_rust",
+          "score": 0.4941
+        },
+        "full": {
+          "label": "angular_leaf_spot",
+          "score": 0.5193
+        },
+        "full_aug_strong": {
+          "label": "bean_rust",
+          "score": 0.9946
+        },
+        "full_aug_basic": {
+          "label": "angular_leaf_spot",
+          "score": 0.7557
+        }
+      },
+      "v2": {
+        "model": "full_aug_strong",
+        "mode": "close",
+        "decision": "DISEASE",
+        "counts": {
+          "bean_rust": 1
+        },
+        "leaves": [
+          {
+            "no": 1,
+            "label": "bean_rust",
+            "score": 0.9946,
+            "check": false
+          }
+        ],
+        "average": {
+          "angular_leaf_spot": 0.0054,
+          "bean_rust": 0.9946,
+          "healthy": 0.0
+        }
+      }
+    },
+    {
+      "file": "222222.webp",
+      "v1_whole_image": {
+        "headonly": {
+          "label": "healthy",
+          "score": 0.528
+        },
+        "full": {
+          "label": "bean_rust",
+          "score": 0.9778
+        },
+        "full_aug_strong": {
+          "label": "healthy",
+          "score": 0.6036
+        },
+        "full_aug_basic": {
+          "label": "bean_rust",
+          "score": 0.8385
+        }
+      },
+      "v2": {
+        "model": "full_aug_strong",
+        "mode": "far",
+        "decision": "CHECK",
+        "counts": {
+          "healthy": 7,
+          "CHECK": 1
+        },
+        "leaves": [
+          {
+            "no": 1,
+            "label": "healthy",
+            "score": 0.6868,
+            "check": false
+          },
+          {
+            "no": 2,
+            "label": "healthy",
+            "score": 0.7389,
+            "check": false
+          },
+          {
+            "no": 3,
+            "label": "healthy",
+            "score": 0.7984,
+            "check": false
+          },
+          {
+            "no": 4,
+            "label": "healthy",
+            "score": 0.8526,
+            "check": false
+          },
+          {
+            "no": 5,
+            "label": "healthy",
+            "score": 0.4212,
+            "check": true
+          },
+          {
+            "no": 6,
+            "label": "healthy",
+            "score": 0.8625,
+            "check": false
+          },
+          {
+            "no": 7,
+            "label": "healthy",
+            "score": 0.9177,
+            "check": false
+          },
+          {
+            "no": 8,
+            "label": "healthy",
+            "score": 0.9868,
+            "check": false
+          }
+        ],
+        "average": {
+          "angular_leaf_spot": 0.1616,
+          "bean_rust": 0.0552,
+          "healthy": 0.7831
+        }
+      }
+    }
+  ]
+}
