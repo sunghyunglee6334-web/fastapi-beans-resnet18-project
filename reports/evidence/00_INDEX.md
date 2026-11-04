@@ -9,4 +9,4 @@
 | 5 처리흐름 | ui_sync_* · ui_async_202_* · ui_async_done_* · celery_log |
 | 6 성능 | perf_result · ../figures/perf_compare.png · 원본 ../data/timings.csv |
 | 7 테스트 · 오류 | v2_summary · robust_result · ../figures/robust_sheet.jpg · pytest · bad_image · not_found · err_413 · err_422 · worker_stopped_restarted · redis_down_503 · redis_down_sync · db_failed · docker_ps_restored · ui_sync_cache_hit · ui_async_cache_hit |
-| 9 문제 분석 · 개선 | leak_check · leak_top_pairs · v2_far_original · v2_far_original_boxes · v2_close_test_boxes · v2_retake_blur_boxes · v2_summary · **v2_final_result** (모델 4개 Val 비교 · 최종 Test · 빽빽한 밭 v1 vs v2) · 원본 ../analysis/summary.json · ../data/v2_*.json · ../data/final_models.json · ../data/v2_external.json |
+| 8 최종 기술보고서 (문제 분석 · 개선) | leak_check · leak_top_pairs · v2_far_original · v2_far_original_boxes · v2_close_test_boxes · v2_retake_blur_boxes · v2_summary · **v2_final_result** (모델 4개 Val 비교 · 최종 Test · 빽빽한 밭 v1 vs v2) · 원본 ../analysis/summary.json · ../data/v2_*.json · ../data/final_models.json · ../data/v2_external.json |

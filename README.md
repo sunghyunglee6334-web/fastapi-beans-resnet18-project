@@ -45,7 +45,7 @@ Train **1,034장** · Validation **133장**으로 먼저 평가 필수 기준선
 **최종 서비스 모델을 고른 방법**
 
 - **Validation 으로만 선택** — 두 증강 모델이 130/133 으로 같아 평균 점수(0.963 vs 0.956)가 높은 강한 증강을 골랐습니다. Test 를 보고 고르면 데이터 누수가 되므로 Test 는 선택이 끝난 뒤 1회만 측정했습니다 (95% 신뢰구간 0.914 ~ 0.984).
-- **전환은 한 줄** — `.env` 의 `MODEL_PATH=artifacts/beans_resnet18_full_aug` · 캐시 키에 모델 경로가 들어 있어 기존 캐시와 섞이지 않습니다. 같은 ResNet18 구조라 응답 속도는 Head-only 측정값과 같습니다 → [09 7장](reports/09_문제분석_개선보고서.md)
+- **전환은 한 줄** — `.env` 의 `MODEL_PATH=artifacts/beans_resnet18_full_aug` · 캐시 키에 모델 경로가 들어 있어 기존 캐시와 섞이지 않습니다. 같은 ResNet18 구조라 응답 속도는 Head-only 측정값과 같습니다 → [08 6-5](reports/08_최종기술보고서.md)
 
 <br>
 
@@ -59,7 +59,7 @@ Train **1,034장** · Validation **133장**으로 먼저 평가 필수 기준선
 | 빽빽한 밭 사진을 근접으로 잘못 판별 → bean_rust 0.84 | 판별 기준이 "큰 잎이 1장 이상" · 작은 잎이 화면을 덮으면 큰 잎 0장 | 빽빽한 밭 규칙 (잎 면적 60% 이상 · 꽉 찬 작은 잎 8장 이상 → 원거리) | 원거리 · 잎 8장 → **healthy 7 · CHECK 1** · 원래 val 판별 그대로 130 / 133 |
 | 같은 사진인데 사람마다 점수가 다름 · 최종 모델 미정 | 증강 방식 차이 · 서비스 모델이 기준선 그대로 | 증강 2종 학습 · 모델 4개를 같은 Validation 으로 비교 | 최종 **Full + 강한 증강** · Val 0.9774 · Test **0.9531** |
 
-만듦 → 결과 → 분석 → 문제 → 원인 → 개선 → 결과 전체 기록 → [09 문제 분석 · 개선 보고서](reports/09_문제분석_개선보고서.md)
+만듦 → 결과 → 분석 → 문제 → 원인 → 개선 → 결과 전체 기록 → [08 최종 기술보고서 6장](reports/08_최종기술보고서.md)
 
 <br>
 
@@ -112,8 +112,7 @@ Train **1,034장** · Validation **133장**으로 먼저 평가 필수 기준선
 | 05 | [AI 버튼 처리흐름](reports/05_AI버튼_처리흐름.md) | 동기 · 비동기 시퀀스 · 코드 연결표 |
 | 06 | [성능비교 보고서](reports/06_성능비교_보고서.md) | HTTP · 완료 · 추론 · 캐시 |
 | 07 | [기능테스트 · 오류분석](reports/07_기능테스트_오류분석.md) | 23건 · 오류 이력 · 오분류 |
-| 08 | [최종 기술보고서](reports/08_최종기술보고서.md) | 종합 · 설계 이유 · 개선 · 한계 |
-| 09 | [문제 분석 · 개선 보고서](reports/09_문제분석_개선보고서.md) (추가) | 문제 5개 · 원인 분석 · 개선 · 재검증 · 최종 모델 선택 |
+| 08 | [최종 기술보고서](reports/08_최종기술보고서.md) | 결론 · 최종 모델 선택 · 문제 5개 원인 분석 → 개선 → 재검증 · 설계 이유 · 한계 |
 
 추가 산출물: [최종 결과 그림](reports/evidence/v2_final_result.png) · [모델 4개 비교 · 최종 Test](reports/data/final_models.json) · [외부 사진 v1 vs v2](reports/data/v2_external.json) · [누수 점검](reports/analysis/summary.json) · [v2 결과](reports/data/v2_far_original.json) · [Test 지표](reports/data/test_metrics.json) · [강건성 테스트](reports/figures/robust_sheet.jpg) · [성능 그래프](reports/figures/perf_compare.png) · [Architecture](reports/figures/architecture.png) · [WBS](reports/figures/wbs_schedule.png) · [증빙 목록](reports/evidence/00_INDEX.md) · `perf.py` · `perf_chart.py`
 
@@ -123,7 +122,7 @@ Train **1,034장** · Validation **133장**으로 먼저 평가 필수 기준선
 
 | 이름 | 역할 | 담당 | 주요 산출물 |
 |---|---|---|---|
-| 이성형<br>(Sung Hyung Lee) | 1인 개발 · AI 서빙 | 데이터 준비 · Fine-tuning · 증강 실험 · 모델 선택 · FastAPI / Celery / Redis / PostgreSQL 서빙 · 성능 · 장애 검증 · 누수 점검 · v2 장면 분석 · 문서 | 산출물 01 ~ 09 · README · 성능 그래프 · 증빙 캡처 |
+| 이성형<br>(Sung Hyung Lee) | 1인 개발 · AI 서빙 | 데이터 준비 · Fine-tuning · 증강 실험 · 모델 선택 · FastAPI / Celery / Redis / PostgreSQL 서빙 · 성능 · 장애 검증 · 누수 점검 · v2 장면 분석 · 문서 | 산출물 01 ~ 08 · README · 성능 그래프 · 증빙 캡처 |
 
 <br>
 
@@ -188,14 +187,14 @@ docker compose ps
 | 기능 | 화면 · API | 근거 |
 |---|---|---|
 | 콩잎 3클래스 Fine-tuning · 모델 저장 · 증강 (`--augment --aug-mode strong / basic`) | `training/finetune.py` → `artifacts/beans_resnet18*` | [01](reports/01_FineTuning_결과보고서.md) |
-| 모델 4개 Validation 비교 · 최종 선택 · Test 1회 | `tools/final_check.py` → `reports/data/final_models.json` | [09](reports/09_문제분석_개선보고서.md) |
+| 모델 4개 Validation 비교 · 최종 선택 · Test 1회 | `tools/final_check.py` → `reports/data/final_models.json` | [08](reports/08_최종기술보고서.md) |
 | 동기 분류 · 결과 바로 반환 (200) | `/vision/sync/` · `POST /api/sync/classify/` | [03](reports/03_API_명세서.md) |
 | 비동기 접수 (202 + job_id) · 상태 조회 | `/vision/async/` · `POST /api/async/classify/` · `GET /api/async/jobs/{job_id}/` | [03](reports/03_API_명세서.md) · [05](reports/05_AI버튼_처리흐름.md) |
 | Redis 결과 캐시 · TTL 600초 | `ai/cache_service.py` | [06](reports/06_성능비교_보고서.md) |
 | 작업 상태 · 결과 저장 | PostgreSQL `image_jobs` | [04](reports/04_DB_구조_작업이력.md) |
 | 입력 검증 · 오류 응답 | 400 형식 · 413 용량 · 422 누락 · 404 · 503 | [07](reports/07_기능테스트_오류분석.md) |
-| v2 장면 분석 · 근접 / 원거리 자동 판별 · 잎 자동 분리 · 잎별 분류 · CHECK · RETAKE · 잎별 점수 표 · 종합 평균 | `/vision/scene/` · `POST /api/v2/classify/` | [09](reports/09_문제분석_개선보고서.md) |
-| 데이터 누수 점검 · 재채점 | `leak_check.py` → `reports/analysis/` | [09](reports/09_문제분석_개선보고서.md) |
+| v2 장면 분석 · 근접 / 원거리 자동 판별 · 잎 자동 분리 · 잎별 분류 · CHECK · RETAKE · 잎별 점수 표 · 종합 평균 | `/vision/scene/` · `POST /api/v2/classify/` | [08](reports/08_최종기술보고서.md) |
+| 데이터 누수 점검 · 재채점 | `leak_check.py` → `reports/analysis/` | [08](reports/08_최종기술보고서.md) |
 | API 문서 | `/docs` Swagger | [swagger](reports/evidence/swagger.png) |
 
 </details>
@@ -236,7 +235,7 @@ fastapi_resnet18/
 ├── make_variants.py        ← 새 사진 변형 19장 생성
 ├── robust/variants/        ← 강건성 테스트 입력 사진
 │
-└── reports/                ← 평가 산출물 01 ~ 08 · 추가 09
+└── reports/                ← 평가 산출물 01 ~ 08
     ├── analysis/           ← 누수 점검 · 재채점 결과 (json · csv)
     ├── data/               ← timings.csv · training_report · test_metrics · v2 결과
     ├── figures/            ← Architecture · WBS · 성능 그래프
@@ -298,7 +297,7 @@ Head-only 는 Train 정확도도 0.774 로 **과소적합** (분류층 1,539개�
 
 #### 데이터 누수 점검
 
-Head-only → Full 상승폭(+21.1%p)이 커서 사진 1,295장 전부로 다시 점검했습니다. md5 완전 중복 **0건** · pHash 거의 같은 사진 **0건** · ImageNet 특징 유사도 0.95 이상 **0장** · 학습 코드의 test 사용 **0줄**이고, train 과 가장 덜 닮은 Test 구간에서도 Full 이 0.844 vs 0.688 로 앞서 **누수가 아닌 실제 학습 효과**로 판단했습니다 → [09 4장](reports/09_문제분석_개선보고서.md) · [summary.json](reports/analysis/summary.json)
+Head-only → Full 상승폭(+21.1%p)이 커서 사진 1,295장 전부로 다시 점검했습니다. md5 완전 중복 **0건** · pHash 거의 같은 사진 **0건** · ImageNet 특징 유사도 0.95 이상 **0장** · 학습 코드의 test 사용 **0줄**이고, train 과 가장 덜 닮은 Test 구간에서도 Full 이 0.844 vs 0.688 로 앞서 **누수가 아닌 실제 학습 효과**로 판단했습니다 → [08 6-2](reports/08_최종기술보고서.md) · [summary.json](reports/analysis/summary.json)
 
 <br>
 
@@ -325,9 +324,9 @@ Head-only → Full 상승폭(+21.1%p)이 커서 사진 1,295장 전부로 다시
 | 흐린 사진 | angular_leaf_spot 0.42 | RETAKE | **RETAKE** |
 | 빽빽한 밭 사진 (인터넷 · 숫자만) | bean_rust 0.84 (기본 증강) · 0.98 (Full) 오판 | 근접으로 잘못 판별 | 원거리 · 잎 8장 → **healthy 7 · CHECK 1** · 평균 healthy 0.78 |
 
-최종 모델은 잎별 확신도가 크게 올라 건강한 잎 대부분을 0.95 이상으로 맞히지만, 밭 사진의 잎 1장을 bean_rust 0.66 으로 판정해 **DISEASE 로 과하게 경고**합니다 (불량을 놓치지 않는 쪽을 우선한 판정 규칙 · 한계로 기록 → [09 5장](reports/09_문제분석_개선보고서.md)). 화면은 사진에 번호 동그라미 (색 = 결과) 를 표시하고, 아래 표에 잎별 1 ~ 3등 점수와 **종합 평균**을 보여줍니다.
+최종 모델은 잎별 확신도가 크게 올라 건강한 잎 대부분을 0.95 이상으로 맞히지만, 밭 사진의 잎 1장을 bean_rust 0.66 으로 판정해 **DISEASE 로 과하게 경고**합니다 (불량을 놓치지 않는 쪽을 우선한 판정 규칙 · 한계로 기록 → [08 6-3](reports/08_최종기술보고서.md)). 화면은 사진에 번호 동그라미 (색 = 결과) 를 표시하고, 아래 표에 잎별 1 ~ 3등 점수와 **종합 평균**을 보여줍니다.
 
-단계별 방법 · 기준값 조정 · 한계 → [09 5장](reports/09_문제분석_개선보고서.md)
+단계별 방법 · 기준값 조정 · 한계 → [08 6-3](reports/08_최종기술보고서.md)
 
 </details>
 
@@ -419,7 +418,7 @@ Head-only → Full 상승폭(+21.1%p)이 커서 사진 1,295장 전부로 다시
 - `docker compose down -v` 는 PostgreSQL · Redis 볼륨을 지우므로 사용하지 않습니다 (중지는 `docker compose stop`)
 - 모델을 바꾸면 web · worker 를 모두 다시 만들어야 합니다 (프로세스마다 모델을 따로 로드) · 최종 서비스 모델은 `MODEL_PATH=artifacts/beans_resnet18_full_aug`
 - 외부(인터넷) 사진은 정답 라벨이 없어 정확도를 계산하지 않았습니다 · 원본 사진은 저작권 때문에 Git 에 올리지 않고 결과 숫자만 남겼습니다
-- 학습 데이터와 촬영 환경이 다른 사진(밭 · 흙 배경)은 v2 장면 분석(`/vision/scene/`)을 사용합니다 · 잎별 정확도는 분류 모델 성능에 따르며 애매하면 CHECK 로 표시합니다 → [09 5장](reports/09_문제분석_개선보고서.md)
+- 학습 데이터와 촬영 환경이 다른 사진(밭 · 흙 배경)은 v2 장면 분석(`/vision/scene/`)을 사용합니다 · 잎별 정확도는 분류 모델 성능에 따르며 애매하면 CHECK 로 표시합니다 → [08 6-3](reports/08_최종기술보고서.md)
 - v2 근접 / 원거리 판별 · 잎 분리는 OpenCV 규칙 기반이라 저해상도 · 노이즈 사진에서 판별이 틀릴 수 있습니다 · HSV 병반 면적비 · CNN + ML 융합은 설계 제안입니다 → [08 최종보고서 8장](reports/08_최종기술보고서.md)
 
 </details>

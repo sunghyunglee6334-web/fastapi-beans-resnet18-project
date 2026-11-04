@@ -212,7 +212,7 @@ Head-only → Full 상승폭(Val +20.3%p · Test +21.1%p)이 커서 split 오류
 | Test 95% 신뢰구간 | Head-only 0.641 ~ 0.797 · Full 0.883 ~ 0.969 · 맥니마 p = 1.4e-05 |
 
 - train 과 가장 덜 닮은 Test 32장에서도 Full 0.844 · Head-only 0.688 → 누수가 아닌 실제 학습 효과
-- 원인 분석 · 개선 전체 → [09 문제 분석 · 개선 보고서](09_문제분석_개선보고서.md)
+- 원인 분석 · 개선 전체 → [08 최종 기술보고서 6장](08_최종기술보고서.md)
 
 ![누수 점검](evidence/leak_check.png)
 
@@ -236,7 +236,7 @@ python tools/final_check.py      # 모델 4개 같은 Val 재계산 → 1등 선
 - 선택 규칙: Validation 정확도 1등 → 같으면 Validation 평균 점수 → **C** · Test 는 선택이 끝난 뒤 C 1개만 1회 (95% 신뢰구간 0.914 ~ 0.984)
 - Test 로 고르지 않았으므로 Test 0.9531 은 선택에 쓰이지 않은 성능 · 클래스별 지표 · 혼동행렬 → [final_models.json](data/final_models.json)
 - 서비스 전환: `.env` `MODEL_PATH=artifacts/beans_resnet18_full_aug` → `docker compose up -d --force-recreate web worker` · 같은 ResNet18 구조라 산출물 6 속도 측정은 그대로 유효
-- 원인 분석 (사람마다 점수가 다른 이유 = 증강 차이) → [09 7장](09_문제분석_개선보고서.md)
+- 원인 분석 (사람마다 점수가 다른 이유 = 증강 차이) → [08 6-5](08_최종기술보고서.md)
 
 ![최종 결과](evidence/v2_final_result.png)
 
