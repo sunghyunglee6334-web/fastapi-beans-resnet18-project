@@ -1,4 +1,5 @@
-"""예: python -m training.finetune --data dataset --epochs 3 --output artifacts/beans_resnet18"""
+"""예: python -m training.finetune --data dataset --epochs 3 --output artifacts/beans_resnet18
+증강: python -m training.finetune --data dataset --epochs 8 --lr 0.00005 --augment --output artifacts/beans_resnet18_aug"""
 import argparse
 import json
 import random
@@ -11,10 +12,22 @@ from transformers import AutoImageProcessor, AutoModelForImageClassification
 BASE_MODEL = "microsoft/resnet-18"
 EXTS = {".jpg", ".jpeg", ".png", ".webp"}
 
+def build_augment():
+    """--augment 일 때만 Train 에 적용 · 흐림 · 밝기 · 회전 · 확대에 강하게 (Val 에는 적용 안 함)."""
+    from torchvision import transforms as T
+    return T.Compose([
+        T.RandomResizedCrop(448, scale=(0.5, 1.0)),       # 일부만 보이거나 멀리 찍힌 잎
+        T.RandomHorizontalFlip(),
+        T.RandomRotation(25),
+        T.ColorJitter(brightness=0.35, contrast=0.35, saturation=0.25, hue=0.03),
+        T.RandomApply([T.GaussianBlur(9, sigma=(0.5, 2.5))], p=0.25),
+    ])
+
 class FolderImages(Dataset):
-    def __init__(self, root: Path, classes: list[str], processor):
+    def __init__(self, root: Path, classes: list[str], processor, augment=None):
         self.records = []
         self.processor = processor
+        self.augment = augment
         for idx, name in enumerate(classes):
             folder = root / name
             if not folder.is_dir():
@@ -31,6 +44,8 @@ class FolderImages(Dataset):
         path, label = self.records[index]
         with Image.open(path) as raw:
             image = raw.convert("RGB")
+            if self.augment is not None:
+                image = self.augment(image)
             tensor = self.processor(images=image, return_tensors="pt")["pixel_values"][0]
         return {"pixel_values": tensor, "labels": torch.tensor(label, dtype=torch.long)}
 
@@ -48,7 +63,7 @@ def run(args):
         raise ValueError("클래스 폴더가 2개 이상 필요합니다.")
 
     processor = AutoImageProcessor.from_pretrained(BASE_MODEL)
-    train_set = FolderImages(train_root, classes, processor)
+    train_set = FolderImages(train_root, classes, processor, build_augment() if args.augment else None)
     val_set = FolderImages(data / "val", classes, processor)
 
     train_counts = {n: sum(label == i for _, label in train_set.records) for i, n in enumerate(classes)}
@@ -134,6 +149,10 @@ def run(args):
                 "train_count": len(train_set),
                 "val_count": len(val_set),
                 "best_val_accuracy": best_acc,
+                "freeze_backbone": bool(args.freeze_backbone),
+                "augment": bool(args.augment),
+                "lr": args.lr,
+                "epochs": args.epochs,
                 "history": history
             },
             ensure_ascii=False,
@@ -152,4 +171,5 @@ if __name__ == "__main__":
     parser.add_argument("--batch-size", type=int, default=8)
     parser.add_argument("--lr", type=float, default=2e-4)
     parser.add_argument("--freeze-backbone", action="store_true")
+    parser.add_argument("--augment", action="store_true", help="Train 에만 흐림 · 밝기 · 회전 · 확대 증강")
     run(parser.parse_args())

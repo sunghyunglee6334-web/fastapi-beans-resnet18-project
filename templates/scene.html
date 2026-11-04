@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}v2 장면 분석{% endblock %}
+{% block content %}
+<section class="panel"><h2>v2 장면 분석: 근접 / 원거리를 자동으로 나눠 잎마다 분류합니다</h2>
+<p>근접(잎 1장) = 사진 전체 분류 · 원거리(밭 · 여러 잎) = 잎을 자동 분리해 잎마다 분류 · 흐리거나 어두우면 재촬영 요청</p>
+<input id="image" type="file" accept="image/jpeg,image/png,image/webp">
+<button id="send">장면 분석</button>
+<p id="state">이미지를 선택하세요.</p>
+<p id="decision" style="font-size:1.3em;font-weight:700"></p>
+<img id="result" class="preview" hidden>
+<pre id="output">{}</pre></section>
+<script>
+const fileEl=document.getElementById('image');
+document.getElementById('send').onclick=async()=>{
+ const file=fileEl.files[0];if(!file){alert('이미지를 선택하세요');return;}
+ const button=document.getElementById('send');button.disabled=true;
+ const state=document.getElementById('state');const out=document.getElementById('output');
+ const form=new FormData();form.append('image',file);const started=performance.now();
+ state.textContent='분석 중...';
+ try{const res=await fetch('/api/v2/classify/?draw=true',{method:'POST',body:form});const data=await res.json();
+  state.textContent=`HTTP ${res.status} / 응답까지 ${Math.round(performance.now()-started)}ms`;
+  if(res.ok){
+   document.getElementById('decision').textContent=`판정 ${data.decision} · 경로 ${data.mode} · 잎 ${data.leaves.length}장`;
+   if(data.image_jpg_base64){const img=document.getElementById('result');img.src='data:image/jpeg;base64,'+data.image_jpg_base64;img.hidden=false;}
+   delete data.image_jpg_base64;
+  }
+  out.textContent=JSON.stringify(data,null,2);
+ }catch(err){state.textContent=`요청 실패: ${err}`;}finally{button.disabled=false;}
+};
+</script>
+{% endblock %}
