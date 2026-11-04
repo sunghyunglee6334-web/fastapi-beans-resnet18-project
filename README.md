@@ -17,7 +17,7 @@ Train **1,034장** · Validation **133장**으로 Head-only Fine-tuning 해 **Va
 **서비스 모델을 Head-only 로 유지한 이유**
 
 - **평가 필수 기준선** — 평가 지시가 `--freeze-backbone` Head-only 학습 · 서빙이고, 모든 서비스 측정 · 증빙이 이 모델 기준입니다.
-- **Test 미측정** — 두 모델 모두 Validation 으로만 비교했습니다. Validation 은 best epoch 선택에도 쓰여 일반화 성능을 보장하지 않습니다.
+- **Test 는 사후 1회 확인용** — 모델을 확정한 뒤 Test 128장으로 한 번 측정했습니다 (Head-only 0.7188 · Full 0.9297). Test 결과를 보고 서비스 모델을 바꾸면 데이터 누수가 되므로, 전환은 별도 검증 후 결정합니다.
 - **전환 준비 완료** — Test 로 확인되면 `.env` 의 `MODEL_PATH` 한 줄만 바꿔 전환합니다. 캐시 키에 모델 경로가 들어 있어 기존 캐시와 섞이지 않습니다 → [01 Fine-tuning 7장](reports/01_FineTuning_결과보고서.md)
 
 <br>
@@ -29,7 +29,7 @@ Train **1,034장** · Validation **133장**으로 Head-only Fine-tuning 해 **Va
 | 핵심 지표 | 결과 |
 |---|---|
 | 분류 대상 | 콩잎 **3클래스** · 이미지 1장 → 라벨 1개 + 점수 |
-| 학습 | Head-only **0.7669** (서비스) · Full Fine-tuning **0.9699** (선택 실험) · Test 미측정 |
+| 학습 | Validation Head-only **0.7669** (서비스) · Full **0.9699** · **Test 128장 0.7188 · 0.9297** |
 | 실행 구조 | Docker Compose **4개 서비스** · web · worker · redis · postgres |
 | 응답 속도 | 동기 21.1ms · 비동기 접수 **10.0ms** · 캐시 HIT **1.8ms** (중앙값 5회) |
 | 검증 | 실환경 **19건 PASS** · 모의 테스트 4 passed · 장애 시 503 · failed 기록 |
@@ -152,6 +152,9 @@ fastapi_resnet18/
 ├── templates/ · static/    ← 동기 · 비동기 화면
 ├── tests/test_api.py       ← 모의 통합 테스트
 ├── perf.py · perf_chart.py ← 성능 측정 · 그래프
+├── robust_test.py          ← Test 128장 정확도 · 강건성 테스트
+├── make_variants.py        ← 새 사진 변형 19장 생성
+├── robust/variants/        ← 강건성 테스트 입력 사진
 │
 └── reports/                ← 평가 산출물 01 ~ 08
     ├── data/               ← timings.csv · training_report
@@ -189,12 +192,24 @@ Git 제외: `.env` · `.venv/` · `dataset/` · `artifacts/` (가중치) · `med
 
 ## 6. 모델 학습
 
-| 실험 | 학습 대상 | 저장 위치 | Best Val Acc |
-|---|---|---|---:|
-| Head-only (필수 · 서비스) | 분류 헤드만 (`--freeze-backbone`) | `artifacts/beans_resnet18` | **0.7669** |
-| Full Fine-tuning (선택) | 전체 가중치 | `artifacts/beans_resnet18_full` | **0.9699** |
+| 실험 | 학습 대상 | 저장 위치 | Validation | Test (사후 1회) |
+|---|---|---|---:|---:|
+| Head-only (필수 · 서비스) | 분류 헤드만 (`--freeze-backbone`) | `artifacts/beans_resnet18` | **0.7669** | **0.7188** |
+| Full Fine-tuning (선택) | 전체 가중치 | `artifacts/beans_resnet18_full` | **0.9699** | **0.9297** |
+
+Head-only 의 가장 큰 약점은 bean_rust 재현율 0.535 (bean_rust 13장을 angular_leaf_spot 으로 오분류) 입니다 → [01 Fine-tuning 8장](reports/01_FineTuning_결과보고서.md) · [test_metrics.json](reports/data/test_metrics.json)
 
 공통 조건: epochs 3 · batch 8 · lr 0.0002 · AdamW · seed 42 · 출력층 1,000 → 3 교체 · 학습 기록 → [training_report Head-only](reports/data/training_report_headonly.json) · [Full](reports/data/training_report_full.json)
+
+<br>
+
+### 데이터셋 밖 사진 강건성 테스트
+
+새 콩잎 사진(밭에서 찍은 건강한 잎)에 병해 합성 · 사진 효과 · 기하 변형을 준 19장으로 두 모델을 시험했습니다. 건강한 원본부터 두 모델 모두 bean_rust 로 오분류했고, Full 은 블러 · 어둡게 · JPEG 에서 틀린 답에 0.99 이상의 점수를 냈습니다. **학습 데이터(근접 촬영 한 잎)와 촬영 환경이 다르면 Test 성능을 보장하지 못한다**는 한계를 확인했습니다.
+
+![강건성 테스트 결과](reports/figures/robust_sheet.jpg)
+
+변형별 결과 · 해석 · 개선 방향 → [07 5장](reports/07_기능테스트_오류분석.md) · 원본 → [robust_results.csv](reports/data/robust_results.csv) · 실행 `python make_variants.py <사진> robust/variants` → `python robust_test.py`
 
 <br><br>
 
@@ -248,7 +263,7 @@ Git 제외: `.env` · `.venv/` · `dataset/` · `artifacts/` (가중치) · `med
 | 입력 오류 | 400 형식 · 413 5MB 초과 · 422 파일 누락 · 404 없는 작업 |
 | 장애 · 복구 | Worker 정지 → queued 대기 → 재시작 후 done · Redis 정지 → 비동기 503 + failed 기록 · 동기는 캐시 없이 추론 · 복구 후 정상 |
 | 자동 테스트 | `tests/test_api.py` 모의 테스트 4 passed (가짜 모델 · 실환경과 구분) |
-| 분류 관찰 | 낮은 확신도(0.37 ~ 0.47) 오분류 사례 기록 → 확신도 기반 보류 규칙 제안 |
+| 강건성 | 데이터셋 밖 새 콩잎 사진 1장 × 변형 19장 (병해 합성 · 블러 · 노이즈 · 밝기 · 회전 · 가림) → 원본부터 두 모델 모두 오분류 · 도메인 차이 확인 |
 
 전체 19건 · 오류 이력 → [07 기능테스트 · 오류분석](reports/07_기능테스트_오류분석.md)
 
@@ -275,7 +290,7 @@ Git 제외: `.env` · `.venv/` · `dataset/` · `artifacts/` (가중치) · `med
 | 07 | [기능테스트 · 오류분석](reports/07_기능테스트_오류분석.md) | 19건 · 오류 이력 · 오분류 |
 | 08 | [최종 기술보고서](reports/08_최종기술보고서.md) | 종합 · 설계 이유 · 개선 제안 · 한계 |
 
-추가 산출물: [성능 그래프](reports/figures/perf_compare.png) · [Architecture](reports/figures/architecture.png) · [WBS](reports/figures/wbs_schedule.png) · [증빙 목록](reports/evidence/00_INDEX.md) · `perf.py` · `perf_chart.py`
+추가 산출물: [Test 지표](reports/data/test_metrics.json) · [강건성 테스트](reports/figures/robust_sheet.jpg) · [성능 그래프](reports/figures/perf_compare.png) · [Architecture](reports/figures/architecture.png) · [WBS](reports/figures/wbs_schedule.png) · [증빙 목록](reports/evidence/00_INDEX.md) · `perf.py` · `perf_chart.py`
 
 <br><br>
 
@@ -285,4 +300,5 @@ Git 제외: `.env` · `.venv/` · `dataset/` · `artifacts/` (가중치) · `med
 - 데이터셋 · 학습 가중치는 용량이 커서 Git 에서 제외했습니다 → [빠른 시작](#빠른-시작) 2단계로 다시 만듭니다
 - `docker compose down -v` 는 PostgreSQL · Redis 볼륨을 지우므로 사용하지 않습니다 (중지는 `docker compose stop`)
 - 모델을 바꾸면 web · worker 를 모두 다시 만들어야 합니다 (프로세스마다 모델을 따로 로드)
-- Test Accuracy 는 측정하지 않았습니다 · OpenCV · ML 융합 개선은 설계 제안이며 구현하지 않았습니다 → [08 최종보고서 8장](reports/08_최종기술보고서.md)
+- 학습 데이터와 촬영 환경이 다른 사진(밭 · 흙 배경)에서는 오분류가 많습니다 → [07 5장 강건성 테스트](reports/07_기능테스트_오류분석.md)
+- OpenCV · ML 융합 개선은 설계 제안이며 구현하지 않았습니다 → [08 최종보고서 8장](reports/08_최종기술보고서.md)

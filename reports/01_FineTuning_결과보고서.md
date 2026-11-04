@@ -11,7 +11,7 @@
 | 학습 방식 | **Head-only Fine-tuning** (`--freeze-backbone` · Backbone 고정, 분류 헤드만 학습) |
 | 학습 데이터 | Train 1,034장 · Validation 133장 |
 | Best Validation Accuracy | **0.7669 (76.69%)** · epoch 2 · 선택 실험 Full Fine-tuning **0.9699** (7장) |
-| Test Accuracy | **미측정** (제공 `training/finetune.py` 에 Test 평가 절차 없음) |
+| Test Accuracy | **0.7188** (92/128) · Full **0.9297** · 모델 확정 후 별도 스크립트로 1회 측정 (8장) |
 | 모델 저장 위치 | `artifacts/beans_resnet18/` |
 
 ## 1. 데이터 구성
@@ -78,7 +78,7 @@ python -m training.finetune --data dataset --output artifacts/beans_resnet18 --e
 - Best Validation Accuracy: **0.7669** (133장 중 102장 정답)
 - 저장 규칙: Validation Accuracy 가 이전 최고보다 클 때만 저장 → epoch 2 모델이 저장됨 (epoch 3 은 같은 값이라 덮어쓰지 않음)
 - Train Loss 는 계속 감소 (0.99 → 0.71), Validation Accuracy 는 epoch 2 이후 정체 → 3 epoch 로는 헤드 학습이 충분하지 않을 수 있음
-- Test Accuracy · 혼동행렬 · Precision · Recall: **미측정**
+- Test Accuracy · 혼동행렬 · Precision · Recall: 제공 학습 코드에는 없음 → 모델 확정 후 `robust_test.py` 로 1회 측정 (8장)
 - 해석 주의: 원본 ResNet18 의 ImageNet 정확도와 이 콩잎 3클래스 정확도는 과제가 달라 직접 비교하지 않음
 
 ```json
@@ -128,7 +128,7 @@ python -m training.finetune --data dataset --output artifacts/beans_resnet18 --e
 - 한계
   - Best Validation Accuracy 0.7669 · top1 점수가 0.37 ~ 0.64 수준으로 낮아 확신도가 낮은 예측이 많음
   - 서비스 시연 중 오분류 관찰 (예: angular_leaf_spot 사진 → healthy 0.374 · 산출물 7 참고)
-  - Test 정량평가 미수행 · 유사 사진 누출 미점검
+  - Test 0.7188 · bean_rust 재현율 0.535 로 가장 약함 (8장) · 유사 사진 누출 미점검
 - 개선 방향: Full Fine-tuning 은 7장에서 실시 (Validation 0.9699) · 별도 Test 평가 스크립트 작성 후 1회 측정은 미실시
 
 | 증빙 | 파일 |
@@ -156,7 +156,7 @@ python -m training.finetune --data dataset --output artifacts/beans_resnet18_ful
 - 차이: Validation Accuracy **0.7669 → 0.9699 = 20.3%p (0.203) 상승** · Validation 정답 102 → 129장
 - 해석: Head-only 는 ImageNet 으로 배운 특징을 그대로 써서 콩잎 병반 같은 세밀한 질감을 충분히 구분하지 못함 · Full 은 Backbone 까지 콩잎 데이터에 맞춰 조정되어 첫 epoch 부터 0.93
 - 주의
-  - Validation 기준 비교이며 **Test Accuracy 는 두 모델 모두 미측정**
+  - Validation 비교 결과는 8장 Test 128장에서도 같은 방향으로 확인 (0.7188 vs 0.9297)
   - Validation 은 best epoch 선택에도 쓰였으므로 실제 일반화 성능은 별도 Test 로 확인 필요
   - lr 0.0002 는 Full 학습에 다소 큰 값일 수 있음 (가이드 예시 0.00005) · lr 비교는 미실시
   - 서비스(API · Worker)와 산출물 2 ~ 7 의 측정은 **A. Head-only 모델 기준** · B 는 비교 실험으로만 보관
@@ -164,3 +164,33 @@ python -m training.finetune --data dataset --output artifacts/beans_resnet18_ful
 
 ![Full 학습 로그](evidence/train_log_full.png)
 ![Full training_report](evidence/training_report_full.png)
+
+## 8. Test 128장 · 1회 측정 (사후 평가)
+
+학습 · best epoch 선택 · 모델 선택에 쓰지 않은 `dataset/test` 128장으로 **두 모델이 확정된 뒤 한 번만** 측정했습니다. 제공 학습 코드에는 Test 평가가 없어 별도 스크립트 `robust_test.py` 를 사용했습니다 (모델 · 학습 코드는 수정하지 않음).
+
+| 모델 | Validation 133장 | **Test 128장** | angular_leaf_spot F1 | bean_rust F1 | healthy F1 |
+|---|---:|---:|---:|---:|---:|
+| Head-only (서비스) | 0.7669 | **0.7188** (92/128) | 0.698 | 0.605 | 0.830 |
+| Full Fine-tuning (선택 실험) | 0.9699 | **0.9297** (119/128) | 0.944 | 0.909 | 0.937 |
+
+**클래스별 Precision / Recall**
+
+| 모델 | angular_leaf_spot P / R | bean_rust P / R | healthy P / R |
+|---|---|---|---|
+| Head-only | 0.698 / 0.698 | 0.697 / **0.535** | 0.750 / 0.929 |
+| Full | 0.913 / 0.977 | 0.889 / 0.930 | **1.000** / 0.881 |
+
+**혼동행렬** (행 = 정답 · 열 = 예측 · 순서 angular_leaf_spot · bean_rust · healthy)
+
+| 정답 \ 예측 | Head-only | Full |
+|---|---|---|
+| angular_leaf_spot (43) | **30** · 7 · 6 | **42** · 1 · 0 |
+| bean_rust (43) | 13 · **23** · 7 | 3 · **40** · 0 |
+| healthy (42) | 0 · 3 · **39** | 1 · 4 · **37** |
+
+- Test 가 Validation 보다 약간 낮음 (0.7669 → 0.7188 · 0.9699 → 0.9297) · Validation 이 best epoch 선택에 쓰였기 때문에 예상된 차이
+- Head-only 의 가장 큰 약점 = **bean_rust 를 angular_leaf_spot 으로 13장 오분류** (두 병해 모두 잎의 반점이라 헤드만으로는 구분 부족)
+- Full 은 질병 2종 재현율 0.93 ~ 0.98 · 오분류 9장 중 5장이 healthy → 질병 (정상을 병으로 과하게 판정)
+- 이 결과로 서비스 모델을 바꾸지 않음 (Test 를 보고 선택하면 누수) · Full 전환은 별도 검증 데이터로 다시 확인 후 결정
+- 원본 기록: [`reports/data/test_metrics.json`](data/test_metrics.json) · 데이터셋 밖 사진 강건성 테스트 → [07 5장](07_기능테스트_오류분석.md)

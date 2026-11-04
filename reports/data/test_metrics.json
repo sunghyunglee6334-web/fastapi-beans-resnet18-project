@@ -1,0 +1,100 @@
+{
+  "headonly": {
+    "model": "artifacts/beans_resnet18",
+    "test_count": 128,
+    "accuracy": 0.7188,
+    "per_class": {
+      "angular_leaf_spot": {
+        "precision": 0.6977,
+        "recall": 0.6977,
+        "f1": 0.6977,
+        "n": 43
+      },
+      "bean_rust": {
+        "precision": 0.697,
+        "recall": 0.5349,
+        "f1": 0.6053,
+        "n": 43
+      },
+      "healthy": {
+        "precision": 0.75,
+        "recall": 0.9286,
+        "f1": 0.8298,
+        "n": 42
+      }
+    },
+    "confusion_matrix": {
+      "rows=actual, cols=pred": [
+        "angular_leaf_spot",
+        "bean_rust",
+        "healthy"
+      ],
+      "values": [
+        [
+          30,
+          7,
+          6
+        ],
+        [
+          13,
+          23,
+          7
+        ],
+        [
+          0,
+          3,
+          39
+        ]
+      ]
+    }
+  },
+  "full": {
+    "model": "artifacts/beans_resnet18_full",
+    "test_count": 128,
+    "accuracy": 0.9297,
+    "per_class": {
+      "angular_leaf_spot": {
+        "precision": 0.913,
+        "recall": 0.9767,
+        "f1": 0.9438,
+        "n": 43
+      },
+      "bean_rust": {
+        "precision": 0.8889,
+        "recall": 0.9302,
+        "f1": 0.9091,
+        "n": 43
+      },
+      "healthy": {
+        "precision": 1.0,
+        "recall": 0.881,
+        "f1": 0.9367,
+        "n": 42
+      }
+    },
+    "confusion_matrix": {
+      "rows=actual, cols=pred": [
+        "angular_leaf_spot",
+        "bean_rust",
+        "healthy"
+      ],
+      "values": [
+        [
+          42,
+          1,
+          0
+        ],
+        [
+          3,
+          40,
+          0
+        ],
+        [
+          1,
+          4,
+          37
+        ]
+      ]
+    }
+  }
+}
