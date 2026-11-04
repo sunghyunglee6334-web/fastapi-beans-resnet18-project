@@ -194,3 +194,4 @@ python -m training.finetune --data dataset --output artifacts/beans_resnet18_ful
 - Full 은 질병 2종 재현율 0.93 ~ 0.98 · 오분류 9장 중 5장이 healthy → 질병 (정상을 병으로 과하게 판정)
 - 이 결과로 서비스 모델을 바꾸지 않음 (Test 를 보고 선택하면 누수) · Full 전환은 별도 검증 데이터로 다시 확인 후 결정
 - 원본 기록: [`reports/data/test_metrics.json`](data/test_metrics.json) · 데이터셋 밖 사진 강건성 테스트 → [07 5장](07_기능테스트_오류분석.md)
+![Test 128장 지표](evidence/test_metrics.png)

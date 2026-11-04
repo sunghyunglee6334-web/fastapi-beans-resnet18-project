@@ -2,7 +2,7 @@
 
 | 산출물 | 파일 |
 |---|---|
-| 1 Fine-tuning | ../data/test_metrics.json (Test 128장) · data_count · dup_check · train_log · training_report · model_folder · train_log_full · training_report_full |
+| 1 Fine-tuning | test_metrics · ../data/test_metrics.json (Test 128장) · data_count · dup_check · train_log · training_report · model_folder · train_log_full · training_report_full |
 | 2 아키텍처 | docker_ps · redis_pg_ready · celery_log · docker_ps_restored |
 | 3 API | swagger · api_async_202 · api_job_done · bad_image · not_found · err_413 · err_422 · redis_down_503 · redis_down_sync |
 | 4 DB | db_rows · db_rows_all · db_dbeaver · db_failed · db_schema |

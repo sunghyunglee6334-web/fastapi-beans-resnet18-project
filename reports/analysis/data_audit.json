@@ -1,0 +1,103 @@
+{
+  "counts": {
+    "train": {
+      "angular_leaf_spot": 345,
+      "bean_rust": 348,
+      "healthy": 341
+    },
+    "val": {
+      "angular_leaf_spot": 44,
+      "bean_rust": 45,
+      "healthy": 44
+    },
+    "test": {
+      "angular_leaf_spot": 43,
+      "bean_rust": 43,
+      "healthy": 42
+    }
+  },
+  "sizes": {
+    "train": {
+      "500x500": 1034
+    },
+    "val": {
+      "500x500": 133
+    },
+    "test": {
+      "500x500": 128
+    }
+  },
+  "stats": {
+    "train": {
+      "angular_leaf_spot": {
+        "brightness": 126.2,
+        "hue": 37.3,
+        "saturation": 135.3,
+        "sharpness": 3337.2
+      },
+      "bean_rust": {
+        "brightness": 115.1,
+        "hue": 39.3,
+        "saturation": 123.3,
+        "sharpness": 3101.8
+      },
+      "healthy": {
+        "brightness": 129.8,
+        "hue": 49.6,
+        "saturation": 127.1,
+        "sharpness": 5185.5
+      }
+    },
+    "val": {
+      "angular_leaf_spot": {
+        "brightness": 122.1,
+        "hue": 43.6,
+        "saturation": 139.8,
+        "sharpness": 3463.4
+      },
+      "bean_rust": {
+        "brightness": 118.6,
+        "hue": 36.7,
+        "saturation": 120.8,
+        "sharpness": 2760.0
+      },
+      "healthy": {
+        "brightness": 128.2,
+        "hue": 48.7,
+        "saturation": 134.5,
+        "sharpness": 5059.5
+      }
+    },
+    "test": {
+      "angular_leaf_spot": {
+        "brightness": 124.9,
+        "hue": 32.9,
+        "saturation": 143.1,
+        "sharpness": 3200.2
+      },
+      "bean_rust": {
+        "brightness": 116.4,
+        "hue": 37.8,
+        "saturation": 128.2,
+        "sharpness": 2738.7
+      },
+      "healthy": {
+        "brightness": 131.8,
+        "hue": 50.1,
+        "saturation": 116.2,
+        "sharpness": 5102.7
+      }
+    }
+  },
+  "finetune_test_lines": [],
+  "params": {
+    "headonly": {
+      "total": 11178051,
+      "trained": 1539
+    },
+    "full": {
+      "total": 11178051,
+      "trained": 11178051
+    }
+  }
+}
