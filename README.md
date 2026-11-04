@@ -1,6 +1,15 @@
-# 콩잎 이미지 분류 Vision AI API
+<div align="center">
 
-## 1. 프로젝트 소개
+# 콩잎 이미지 분류 Vision AI API · Fine-tuning부터 장면 분석 서빙까지
+
+</div>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white" alt="Python 3.11"> <img src="https://img.shields.io/badge/PyTorch-GPU%20train%20%7C%202.5.1%20CPU%20serve-EE4C2C?logo=pytorch&logoColor=white" alt="PyTorch"> <img src="https://img.shields.io/badge/Transformers-ResNet--18-FFD21E?logo=huggingface&logoColor=black" alt="Transformers ResNet-18"> <img src="https://img.shields.io/badge/FastAPI-0.115%2B-009688?logo=fastapi&logoColor=white" alt="FastAPI 0.115+"> <img src="https://img.shields.io/badge/Celery-5.4%2B-37814A?logo=celery&logoColor=white" alt="Celery 5.4+"> <img src="https://img.shields.io/badge/Redis-7.4-DC382D?logo=redis&logoColor=white" alt="Redis 7.4"><br>
+  <img src="https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white" alt="PostgreSQL 17"> <img src="https://img.shields.io/badge/Docker%20Compose-4%20services-2496ED?logo=docker&logoColor=white" alt="Docker Compose 4 services"> <img src="https://img.shields.io/badge/OpenCV-v2%20scene%20analysis-5C3EE8?logo=opencv&logoColor=white" alt="OpenCV v2 scene analysis"> <img src="https://img.shields.io/badge/NVIDIA-CUDA%20GPU%20train-76B900?logo=nvidia&logoColor=white" alt="NVIDIA CUDA"> <img src="https://img.shields.io/badge/Ubuntu-WSL2-E95420?logo=ubuntu&logoColor=white" alt="Ubuntu WSL2"> <img src="https://img.shields.io/badge/pytest-10%20passed-0A9EDC?logo=pytest&logoColor=white" alt="pytest 10 passed">
+</p>
+
+## 프로젝트 소개
 
 ### 개요
 
@@ -68,13 +77,15 @@ Train **1,034장** · Validation **133장**으로 먼저 평가 필수 기준선
 
 <br>
 
-### Architecture
+### 핵심 결과 그래프
 
-FastAPI 는 요청 검증 · 응답만 맡고, 오래 걸리는 추론은 Redis 브로커를 거쳐 Celery Worker 가 처리합니다. 같은 이미지 · 같은 모델은 Redis 캐시에서 바로 돌려주고, 비동기 작업의 상태와 결과는 PostgreSQL 에 남깁니다.
+![최종 결과 · 모델 4개 Validation 비교 · 빽빽한 밭 사진 v1 vs v2](reports/evidence/v2_final_result.png)
 
-![콩잎 이미지 분류 Vision AI API Architecture](reports/figures/architecture.png)
+*① 모델 4개를 같은 Validation 133장으로 비교해 Full + 강한 증강을 최종 모델로 선택 (Test 1회 0.9531) · ② 빽빽한 밭 사진은 v2 장면 분석으로 잎마다 나눠 판단*
 
-구성요소 역할 · 실행환경 → [02 시스템 아키텍처](reports/02_시스템_아키텍처.md) · 버튼 클릭 후 코드 흐름 → [05 처리흐름](reports/05_AI버튼_처리흐름.md)
+![동기 · 비동기 · 캐시 성능 비교](reports/figures/perf_compare.png)
+
+*비동기는 접수와 처리를 분리해 HTTP 응답 10.0 ms · 캐시 HIT 는 추론을 생략해 1.8 ms · 원본 → [timings.csv](reports/data/timings.csv)*
 
 <br>
 
@@ -90,15 +101,49 @@ FastAPI 는 요청 검증 · 응답만 맡고, 오래 걸리는 추론은 Redis 
 
 | 용도 | 바로가기 |
 |---|---|
-| 처음 실행 | [빠른 시작](#빠른-시작) → [7. 실행 · 확인](#7-실행--확인) |
-| 성과 · 근거 | [문제 분석 · 개선](#문제-분석--개선) · [개선 효과](#개선-효과) · [9. 성능 비교](#9-성능-비교) · [10. 검증 결과](#10-검증-결과) |
-| 산출물 01 ~ 09 | [01 Fine-tuning](reports/01_FineTuning_결과보고서.md) · [02 아키텍처](reports/02_시스템_아키텍처.md) · [03 API](reports/03_API_명세서.md) · [04 DB](reports/04_DB_구조_작업이력.md) · [05 처리흐름](reports/05_AI버튼_처리흐름.md) · [06 성능](reports/06_성능비교_보고서.md) · [07 테스트](reports/07_기능테스트_오류분석.md) · [08 최종보고서](reports/08_최종기술보고서.md) · [09 문제 분석 · 개선](reports/09_문제분석_개선보고서.md) |
-| 구조 · 일정 | [3. 폴더 구조](#3-프로젝트-폴더-구조) · [11. WBS 일정](#11-wbs-일정) |
-| 문제 대응 | [13. 주의사항](#13-주의사항) |
+| 처음 실행 | [빠른 시작](#quick-start) → [6. 실행 · 확인](#run-check) |
+| 성과 · 근거 | [문제 분석 · 개선](#문제-분석--개선) · [핵심 결과 그래프](#핵심-결과-그래프) · [8. 성능 비교](#perf) · [9. 검증 결과](#verify) |
+| 구조 · 산출물 | [Architecture](#architecture) · [산출물](#산출물) · [2. 폴더 구조](#folders) · [10. WBS 일정](#wbs) |
+| 문제 대응 | [주의사항](#caution) |
+
 
 <br><br>
 
-## 빠른 시작
+## Architecture
+
+FastAPI 는 요청 검증 · 응답만 맡고, 오래 걸리는 추론은 Redis 브로커를 거쳐 Celery Worker 가 처리합니다. 같은 이미지 · 같은 모델은 Redis 캐시에서 바로 돌려주고, 비동기 작업의 상태와 결과는 PostgreSQL 에 남깁니다.
+
+![콩잎 이미지 분류 Vision AI API Architecture](reports/figures/architecture.png)
+
+구성요소 역할 · 실행환경 → [02 시스템 아키텍처](reports/02_시스템_아키텍처.md) · 버튼 클릭 후 코드 흐름 → [05 처리흐름](reports/05_AI버튼_처리흐름.md)
+
+<br>
+
+
+<br><br>
+
+## 산출물
+
+| 번호 | 산출물 | 핵심 |
+|---|---|---|
+| 01 | [Fine-tuning 결과보고서](reports/01_FineTuning_결과보고서.md) | 데이터 매핑 · 학습 설정 · Head-only vs Full |
+| 02 | [시스템 아키텍처](reports/02_시스템_아키텍처.md) | 구성도 · 역할 · 실행환경 |
+| 03 | [API 명세서](reports/03_API_명세서.md) | 주소 · Method · 응답 · 상태코드 |
+| 04 | [DB 구조 · 작업이력](reports/04_DB_구조_작업이력.md) | image_jobs · 실제 이력 · failed 행 |
+| 05 | [AI 버튼 처리흐름](reports/05_AI버튼_처리흐름.md) | 동기 · 비동기 시퀀스 · 코드 연결표 |
+| 06 | [성능비교 보고서](reports/06_성능비교_보고서.md) | HTTP · 완료 · 추론 · 캐시 |
+| 07 | [기능테스트 · 오류분석](reports/07_기능테스트_오류분석.md) | 23건 · 오류 이력 · 오분류 |
+| 08 | [최종 기술보고서](reports/08_최종기술보고서.md) | 종합 · 설계 이유 · 개선 · 한계 |
+| 09 | [문제 분석 · 개선 보고서](reports/09_문제분석_개선보고서.md) (추가) | 문제 5개 · 원인 분석 · 개선 · 재검증 · 최종 모델 선택 |
+
+추가 산출물: [최종 결과 그림](reports/evidence/v2_final_result.png) · [모델 4개 비교 · 최종 Test](reports/data/final_models.json) · [외부 사진 v1 vs v2](reports/data/v2_external.json) · [누수 점검](reports/analysis/summary.json) · [v2 결과](reports/data/v2_far_original.json) · [Test 지표](reports/data/test_metrics.json) · [강건성 테스트](reports/figures/robust_sheet.jpg) · [성능 그래프](reports/figures/perf_compare.png) · [Architecture](reports/figures/architecture.png) · [WBS](reports/figures/wbs_schedule.png) · [증빙 목록](reports/evidence/00_INDEX.md) · `perf.py` · `perf_chart.py`
+
+
+<br><br>
+
+<a id="quick-start"></a>
+<details>
+<summary><b>빠른 시작</b> — 받기 · 설치 → 데이터 · 학습 → <code>docker compose up</code> (데이터 · 모델 · <code>.env</code> 는 저장소에 없음)</summary>
 
 준비물: Windows 11 + WSL2 Ubuntu + **Docker Desktop** (Settings → Resources → WSL integration → Ubuntu 켜기). NVIDIA GPU 가 있으면 학습이 빨라지며, 없으면 CPU 로 학습합니다.
 
@@ -137,9 +182,25 @@ docker compose ps
 
 4개 서비스가 `Up` 이면 http://127.0.0.1:8000/vision/sync/ 에서 콩잎 사진을 올려 확인합니다. 밭 사진처럼 잎이 여러 장인 사진은 http://127.0.0.1:8000/vision/scene/ 에서 확인합니다.
 
-<br><br>
+</details>
 
-## 2. 프로젝트 주요 기능
+<a id="caution"></a>
+<details>
+<summary><b>주의사항</b> — <code>.env</code> · 데이터 · 모델 Git 제외 · 볼륨 삭제 금지 · 모델 변경 · 외부 사진 · 한계</summary>
+
+- `.env` · 비밀번호는 Git 에 올리지 않습니다 (`.env.example` 만 공유)
+- 데이터셋 · 학습 가중치는 용량이 커서 Git 에서 제외했습니다 → [빠른 시작](#quick-start) 2단계로 다시 만듭니다
+- `docker compose down -v` 는 PostgreSQL · Redis 볼륨을 지우므로 사용하지 않습니다 (중지는 `docker compose stop`)
+- 모델을 바꾸면 web · worker 를 모두 다시 만들어야 합니다 (프로세스마다 모델을 따로 로드) · 최종 서비스 모델은 `MODEL_PATH=artifacts/beans_resnet18_full_aug`
+- 외부(인터넷) 사진은 정답 라벨이 없어 정확도를 계산하지 않았습니다 · 원본 사진은 저작권 때문에 Git 에 올리지 않고 결과 숫자만 남겼습니다
+- 학습 데이터와 촬영 환경이 다른 사진(밭 · 흙 배경)은 v2 장면 분석(`/vision/scene/`)을 사용합니다 · 잎별 정확도는 분류 모델 성능에 따르며 애매하면 CHECK 로 표시합니다 → [09 5장](reports/09_문제분석_개선보고서.md)
+- v2 근접 / 원거리 판별 · 잎 분리는 OpenCV 규칙 기반이라 저해상도 · 노이즈 사진에서 판별이 틀릴 수 있습니다 · HSV 병반 면적비 · CNN + ML 융합은 설계 제안입니다 → [08 최종보고서 8장](reports/08_최종기술보고서.md)
+
+</details>
+
+<a id="features"></a>
+<details>
+<summary><b>1. 프로젝트 주요 기능</b> — 학습 · 동기 · 비동기 · 캐시 · DB · 오류 처리 · v2 장면 분석 · 모델 비교</summary>
 
 | 기능 | 화면 · API | 근거 |
 |---|---|---|
@@ -154,9 +215,11 @@ docker compose ps
 | 데이터 누수 점검 · 재채점 | `leak_check.py` → `reports/analysis/` | [09](reports/09_문제분석_개선보고서.md) |
 | API 문서 | `/docs` Swagger | [swagger](reports/evidence/swagger.png) |
 
-<br><br>
+</details>
 
-## 3. 프로젝트 폴더 구조
+<a id="folders"></a>
+<details>
+<summary><b>2. 프로젝트 폴더 구조</b> — 서빙 코드 · 학습 · 도구 · 테스트 · 산출물 위치</summary>
 
 ```text
 fastapi_resnet18/
@@ -197,11 +260,13 @@ fastapi_resnet18/
     └── evidence/           ← 실행 · 오류 검증 캡처
 ```
 
-Git 제외: `.env` · `.venv/` · `dataset/` · `artifacts/` (가중치) · `media/jobs/` → [빠른 시작](#빠른-시작) 절차로 다시 만듭니다.
+Git 제외: `.env` · `.venv/` · `dataset/` · `artifacts/` (가중치) · `media/jobs/` → [빠른 시작](#quick-start) 절차로 다시 만듭니다.
 
-<br><br>
+</details>
 
-## 4. 실행 환경
+<a id="env"></a>
+<details>
+<summary><b>3. 실행 환경</b> — WSL2 · GPU 학습 · Docker Compose 서빙 · 포트</summary>
 
 | 구분 | 환경 |
 |---|---|
@@ -211,9 +276,11 @@ Git 제외: `.env` · `.venv/` · `dataset/` · `artifacts/` (가중치) · `med
 | 포트 | 8000 web · 6379 redis · 5432 postgres (127.0.0.1 만 접근) |
 | Worker | Celery `--pool=solo --concurrency=1` |
 
-<br><br>
+</details>
 
-## 5. 데이터 준비
+<a id="data"></a>
+<details>
+<summary><b>4. 데이터 준비</b> — Train 1,034 · Validation 133 · Test 128</summary>
 
 | 원본 (Hugging Face `AI-Lab-Makerere/beans`) | 실행용 | 장수 | 용도 |
 |---|---|---:|---|
@@ -223,9 +290,11 @@ Git 제외: `.env` · `.venv/` · `dataset/` · `artifacts/` (가중치) · `med
 
 클래스별 장수 약 1 : 1 : 1 · split 사이 동일 파일 **0건** (md5) · 원본은 보존하고 복사본으로 실행 → [01 Fine-tuning 1장](reports/01_FineTuning_결과보고서.md)
 
-<br><br>
+</details>
 
-## 6. 모델 학습
+<a id="train"></a>
+<details>
+<summary><b>5. 모델 학습</b> — Head-only → Full → 증강 · 최종 모델 · 누수 점검 · 강건성 · v2 결과</summary>
 
 | 실험 | 학습 대상 | 저장 위치 | Validation | Test |
 |---|---|---|---:|---:|
@@ -236,7 +305,7 @@ Git 제외: `.env` · `.venv/` · `dataset/` · `artifacts/` (가중치) · `med
 
 증강은 Train 에만 적용하고 Validation 은 그대로 둡니다 (강한 = 확대 · 잘라내기 · 회전 25° · 밝기 · 대비 · 채도 · 블러 / 기본 = 회전 15° · 좌우 반전 · 밝기). 최종 선택은 Validation 1등 (동점이면 평균 점수) 이고, Test 는 선택 뒤 1회 측정했습니다 → [final_models.json](reports/data/final_models.json)
 
-![최종 결과 · 모델 4개 Validation 비교 · 빽빽한 밭 사진 v1 vs v2](reports/evidence/v2_final_result.png)
+→ 그림: [핵심 결과 그래프](#핵심-결과-그래프)
 
 Head-only 는 Train 정확도도 0.774 로 **과소적합** (분류층 1,539개만 학습) 이고, 가장 큰 약점은 bean_rust 재현율 0.535 (bean_rust 13장을 angular_leaf_spot 으로 오분류) 입니다 → [01 Fine-tuning 8장](reports/01_FineTuning_결과보고서.md) · [test_metrics.json](reports/data/test_metrics.json)
 
@@ -244,13 +313,13 @@ Head-only 는 Train 정확도도 0.774 로 **과소적합** (분류층 1,539개�
 
 <br>
 
-### 데이터 누수 점검
+#### 데이터 누수 점검
 
 Head-only → Full 상승폭(+21.1%p)이 커서 사진 1,295장 전부로 다시 점검했습니다. md5 완전 중복 **0건** · pHash 거의 같은 사진 **0건** · ImageNet 특징 유사도 0.95 이상 **0장** · 학습 코드의 test 사용 **0줄**이고, train 과 가장 덜 닮은 Test 구간에서도 Full 이 0.844 vs 0.688 로 앞서 **누수가 아닌 실제 학습 효과**로 판단했습니다 → [09 4장](reports/09_문제분석_개선보고서.md) · [summary.json](reports/analysis/summary.json)
 
 <br>
 
-### 데이터셋 밖 사진 강건성 테스트
+#### 데이터셋 밖 사진 강건성 테스트
 
 직접 찾은 콩잎 밭 사진(건강한 잎)에 병해 합성 · 사진 효과 · 기하 변형을 준 19장으로 두 모델을 시험했습니다. 건강한 원본부터 두 모델 모두 bean_rust 로 오분류했고, Full 은 블러 · 어둡게 · JPEG 에서 틀린 답에 0.99 이상의 점수를 냈습니다. **학습 데이터(근접 촬영 한 잎)와 촬영 환경이 다르면 Test 성능을 보장하지 못한다**는 한계를 확인했고, v2 장면 분석으로 개선했습니다.
 
@@ -260,7 +329,7 @@ Head-only → Full 상승폭(+21.1%p)이 커서 사진 1,295장 전부로 다시
 
 <br>
 
-### v2 장면 분석 · 개선 결과
+#### v2 장면 분석 · 개선 결과
 
 사진을 **품질 게이트 → 근접 / 원거리 자동 판별 → 잎 자동 분리 → 잎별 분류**로 처리합니다. 근접 사진은 기존과 같이 사진 전체를, 원거리 사진은 잎마다 잘라 같은 모델로 판단하고, 확신이 없으면 틀린 답 대신 CHECK 로 넘깁니다. 판별 기준은 Validation 으로 맞췄습니다 (근접 113 → **130 / 133장**).
 
@@ -277,9 +346,11 @@ Head-only → Full 상승폭(+21.1%p)이 커서 사진 1,295장 전부로 다시
 
 단계별 방법 · 기준값 조정 · 한계 → [09 5장](reports/09_문제분석_개선보고서.md)
 
-<br><br>
+</details>
 
-## 7. 실행 · 확인
+<a id="run-check"></a>
+<details>
+<summary><b>6. 실행 · 확인</b> — 주소별 확인 응답 · 테스트 · 모델 변경</summary>
 
 | 주소 | 확인할 응답 |
 |---|---|
@@ -295,9 +366,11 @@ Head-only → Full 상승폭(+21.1%p)이 커서 사진 1,295장 전부로 다시
 - 근접 / 원거리 판별 확인 → `python tools/scene_preview.py dataset/val`
 - 중지 → `docker compose stop`
 
-<br><br>
+</details>
 
-## 8. API · DB
+<a id="api-db"></a>
+<details>
+<summary><b>7. API · DB</b> — API 4개 · image_jobs 테이블</summary>
 
 | API | Method | 성공 | 실패 |
 |---|---|---|---|
@@ -308,11 +381,11 @@ Head-only → Full 상승폭(+21.1%p)이 커서 사진 1,295장 전부로 다시
 
 `image_jobs` 1개 테이블에 비동기 작업의 상태 (`queued → running → done / failed`) · 결과 · 추론시간 · 캐시 여부를 저장합니다. 이미지는 DB 가 아닌 `media/jobs/<uuid>.bin` 에 저장합니다 → [03 API](reports/03_API_명세서.md) · [04 DB](reports/04_DB_구조_작업이력.md)
 
-<br><br>
+</details>
 
-## 9. 성능 비교
-
-![동기 · 비동기 · 캐시 성능 비교](reports/figures/perf_compare.png)
+<a id="perf"></a>
+<details>
+<summary><b>8. 성능 비교</b> — 동기 · 비동기 · 캐시 응답 시간</summary>
 
 | 항목 (중앙값 5회) | 동기 | 비동기 |
 |---|---:|---:|
@@ -321,11 +394,13 @@ Head-only → Full 상승폭(+21.1%p)이 커서 사진 1,295장 전부로 다시
 | 실제 추론 inference_ms | 15.35 ms | 21.86 ms |
 | HIT HTTP 응답 | 1.8 ms | 7.4 ms (접수) |
 
-비동기는 **접수와 처리를 분리한 효과**이며 추론이 빨라진 것이 아닙니다. 캐시 HIT 의 `inference_ms = null` 은 추론 생략을 뜻합니다 → [06 성능비교](reports/06_성능비교_보고서.md) · [원본 CSV](reports/data/timings.csv)
+비동기는 **접수와 처리를 분리한 효과**이며 추론이 빨라진 것이 아닙니다. 캐시 HIT 의 `inference_ms = null` 은 추론 생략을 뜻합니다 → [06 성능비교](reports/06_성능비교_보고서.md) · [원본 CSV](reports/data/timings.csv) · 그래프 → [핵심 결과 그래프](#핵심-결과-그래프)
 
-<br><br>
+</details>
 
-## 10. 검증 결과
+<a id="verify"></a>
+<details>
+<summary><b>9. 검증 결과</b> — 실환경 · 오류 · 장애 · 자동 테스트 · 모델 선택 · v2</summary>
 
 | 구분 | 결과 |
 |---|---|
@@ -340,40 +415,14 @@ Head-only → Full 상승폭(+21.1%p)이 커서 사진 1,295장 전부로 다시
 
 전체 23건 (기본 19 + v2 4) · 오류 이력 → [07 기능테스트 · 오류분석](reports/07_기능테스트_오류분석.md)
 
-<br><br>
+</details>
 
-## 11. WBS 일정
+<a id="wbs"></a>
+<details>
+<summary><b>10. WBS 일정</b> — 학습 기간 · 작업 · 발표 일정</summary>
 
 월 · 화는 교과 9 Vision · FastAPI · Redis · Celery 학습 기간이며, 수요일부터 목요일 오전까지 평가 작업을 하고 목요일 오후에 발표합니다.
 
 ![콩잎 이미지 분류 Vision AI API WBS 일정](reports/figures/wbs_schedule.png)
 
-<br><br>
-
-## 12. 산출물
-
-| 번호 | 산출물 | 핵심 |
-|---|---|---|
-| 01 | [Fine-tuning 결과보고서](reports/01_FineTuning_결과보고서.md) | 데이터 매핑 · 학습 설정 · Head-only vs Full |
-| 02 | [시스템 아키텍처](reports/02_시스템_아키텍처.md) | 구성도 · 역할 · 실행환경 |
-| 03 | [API 명세서](reports/03_API_명세서.md) | 주소 · Method · 응답 · 상태코드 |
-| 04 | [DB 구조 · 작업이력](reports/04_DB_구조_작업이력.md) | image_jobs · 실제 이력 · failed 행 |
-| 05 | [AI 버튼 처리흐름](reports/05_AI버튼_처리흐름.md) | 동기 · 비동기 시퀀스 · 코드 연결표 |
-| 06 | [성능비교 보고서](reports/06_성능비교_보고서.md) | HTTP · 완료 · 추론 · 캐시 |
-| 07 | [기능테스트 · 오류분석](reports/07_기능테스트_오류분석.md) | 23건 · 오류 이력 · 오분류 |
-| 08 | [최종 기술보고서](reports/08_최종기술보고서.md) | 종합 · 설계 이유 · 개선 · 한계 |
-| 09 | [문제 분석 · 개선 보고서](reports/09_문제분석_개선보고서.md) (추가) | 문제 5개 · 원인 분석 · 개선 · 재검증 · 최종 모델 선택 |
-
-추가 산출물: [최종 결과 그림](reports/evidence/v2_final_result.png) · [모델 4개 비교 · 최종 Test](reports/data/final_models.json) · [외부 사진 v1 vs v2](reports/data/v2_external.json) · [누수 점검](reports/analysis/summary.json) · [v2 결과](reports/data/v2_far_original.json) · [Test 지표](reports/data/test_metrics.json) · [강건성 테스트](reports/figures/robust_sheet.jpg) · [성능 그래프](reports/figures/perf_compare.png) · [Architecture](reports/figures/architecture.png) · [WBS](reports/figures/wbs_schedule.png) · [증빙 목록](reports/evidence/00_INDEX.md) · `perf.py` · `perf_chart.py`
-
-<br><br>
-
-## 13. 주의사항
-
-- `.env` · 비밀번호는 Git 에 올리지 않습니다 (`.env.example` 만 공유)
-- 데이터셋 · 학습 가중치는 용량이 커서 Git 에서 제외했습니다 → [빠른 시작](#빠른-시작) 2단계로 다시 만듭니다
-- `docker compose down -v` 는 PostgreSQL · Redis 볼륨을 지우므로 사용하지 않습니다 (중지는 `docker compose stop`)
-- 모델을 바꾸면 web · worker 를 모두 다시 만들어야 합니다 (프로세스마다 모델을 따로 로드) · 최종 서비스 모델은 `MODEL_PATH=artifacts/beans_resnet18_full_aug`
-- 외부(인터넷) 사진은 정답 라벨이 없어 정확도를 계산하지 않았습니다 · 원본 사진은 저작권 때문에 Git 에 올리지 않고 결과 숫자만 남겼습니다
-- 학습 데이터와 촬영 환경이 다른 사진(밭 · 흙 배경)은 v2 장면 분석(`/vision/scene/`)을 사용합니다 · 잎별 정확도는 분류 모델 성능에 따르며 애매하면 CHECK 로 표시합니다 → [09 5장](reports/09_문제분석_개선보고서.md)
-- v2 근접 / 원거리 판별 · 잎 분리는 OpenCV 규칙 기반이라 저해상도 · 노이즈 사진에서 판별이 틀릴 수 있습니다 · HSV 병반 면적비 · CNN + ML 융합은 설계 제안입니다 → [08 최종보고서 8장](reports/08_최종기술보고서.md)
+</details>
