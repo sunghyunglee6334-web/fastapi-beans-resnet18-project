@@ -15,7 +15,7 @@
 
 ### Architecture
 
-FastAPI 는 요청 검증 · 응답만 맡고, 오래 걸리는 추론은 Redis 브로커를 거쳐 Celery Worker 가 처리합니다. 같은 이미지 · 같은 모델은 Redis 캐시에서 바로 돌려주고, 비동기 작업의 상태와 결과는 PostgreSQL 에 남깁니다.
+FastAPI 는 요청 검증 · 응답만 맡고, 오래 걸리는 추론은 Redis 브로커를 거쳐 Celery Worker 가 처리합니다. 같은 이미지 · 같은 모델은 Redis 캐시에서 바로 돌려주고, 비동기 작업의 상태와 결과는 PostgreSQL 에 남깁니다. 아래 주황 칸 **v2 장면 분석**은 사진 품질을 먼저 보고 **근접 / 원거리를 자동으로 구분**해, 원거리면 잎을 나눠 같은 최종 모델로 잎마다 판정합니다. 4개 서비스는 **Docker Compose** 한 번으로 실행합니다.
 
 ![콩잎 이미지 분류 Vision AI API Architecture](reports/figures/architecture.png)
 

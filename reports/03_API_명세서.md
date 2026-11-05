@@ -29,7 +29,7 @@
 | 413 | 5MB 초과 (`5MB 이하 파일만 허용합니다.`) |
 | 422 | `image` 필드 누락 (FastAPI 검증) |
 
-**성공 응답 (실제 · bean_rust_test.0.jpg · 화면 기준)**
+**성공 응답 (실제 · bean_rust_test.0.jpg · 화면 기준 · 측정 당시 기준선 모델 · 최종 모델이면 `model_id` = `artifacts/beans_resnet18_full_aug`)**
 ```json
 {
   "model_id": "artifacts/beans_resnet18",
